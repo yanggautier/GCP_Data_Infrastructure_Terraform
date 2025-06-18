@@ -26,3 +26,24 @@ Planning Terraform workspace
 ```bash
 terraform plan
 ```
+
+Apply creating resources in gcp
+```bash
+terraform apply
+```
+
+Remove select resource
+```bash
+terraform state rm --dry-run google_sql_database.dvd_rental_db
+```
+
+Create one resource
+```bash
+terraform apply --target=google_sql_database.dvd_rental_db
+```
+
+Destroy all resources
+```bash
+terraform destroy -auto-approve
+```
+## 
