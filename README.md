@@ -1,5 +1,6 @@
 
 
+
 ## Settings
 1. Install Terraform on your machine
 2. Install Google Cloud CLI
@@ -12,6 +13,9 @@ gcloud init
 ``` bash
 gcloud auth application-default login
 ```
+
+## Pre configuration
+You must set your postgresql password in `Secret Manager` to use in cloud SQL PostgreSQL db
 
 ## Run Terraform
 
@@ -42,8 +46,39 @@ Create one resource
 terraform apply --target=google_sql_database.dvd_rental_db
 ```
 
+
 Destroy all resources
+```bash
+terraform destroy plan
+```
+
+```bash
+terraform apply
+```
+
+Or 
 ```bash
 terraform destroy -auto-approve
 ```
-## 
+
+Delete on resource
+ 
+```bash
+terraform destroy -target=google_compute_network.datastream_vpc
+```
+
+
+Show detail of a specific resource
+```bash
+terraform state show resouce_type.resource_name
+```
+
+
+
+
+## Add publication in bd PostgreSQL after deploiement
+
+```sql
+CREATE PUBLICATION dvd_rental_publication FOR ALL TABLES;
+SELECT pg_create_logical_replication_slot('dvd_rental_slot', 'pgoutput');
+```

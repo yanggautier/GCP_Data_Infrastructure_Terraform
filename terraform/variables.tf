@@ -26,7 +26,7 @@ variable "database_name" {
   default     = "dvd_rental_db"
 }
 
-variable "darabase_user_name" {
+variable "database_user_name" {
   description = "Cloud SQL user "
   type        = string
   default     = "dvd_rental_user"
