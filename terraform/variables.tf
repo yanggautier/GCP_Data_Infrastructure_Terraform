@@ -31,23 +31,3 @@ variable "database_user_name" {
   type        = string
   default     = "dvd_rental_user"
 }
-
-
-variable "bigquery_owner_user" {
-  description = "value for the owner of the BigQuery dataset"
-  type        = string
-  default     = "yangguole@outlook.com"
-}
-
-variable "bigquery_analyst_user" {
-  description = "Email of the first analyst user"
-  type        = string
-  default     = "inmoglio@gmail.com"
-}
-
-variable "bigquery_contributor_user" {
-  description = "Email of the first analyst user"
-  type        = string
-  default     = "guoleyang@gmail.com"
-}
-

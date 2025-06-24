@@ -574,6 +574,13 @@ resource "google_project_service" "containerregistry_api" {
 }
 
 # DBT repo
+resource "google_artifact_registry_repository" "dbt_repo" {
+  project  = var.project_id
+  location = var.region
+  repository_id = "dbt-images"
+  format = "DOCKER"
+}
+
 resource "google_storage_bucket" "dbt-bucket" {
   name          = "dbt-bucket-${var.environment}-${random_id.bucket_suffix.hex}"
   location      = var.region
@@ -637,13 +644,6 @@ resource "google_project_iam_member" "artifact_reader" {
   member  = "serviceAccount:${google_service_account.cloud_composer_service_account.email}"
 }
 
-
-resource "google_artifact_registry_repository" "dbt_repo" {
-  project  = var.project_id
-  location = var.region
-  repository_id = "dbt-images"
-  format = "DOCKER"
-}
 
 
 resource "google_composer_environment" "dbt_orchestration" {
