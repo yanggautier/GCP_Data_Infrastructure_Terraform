@@ -6,9 +6,10 @@ terraform {
       version = "~> 5.0"
     }
   }
+  
   backend "gcs" {
-    bucket = "state-files-staging"
-    prefix = "terraform/state-staging"
+    bucket = "state-files-dev"
+    prefix = "terraform/state"
   }
 }
 
@@ -22,6 +23,13 @@ locals {
   source = "../../shared"
 }
 
+
+resource "google_storage_bucket" "state-files-dev" {
+  name          = var.state_file_bucket
+  location      = var.region
+  project       = var.project_id
+  uniform_bucket_level_access = true
+}
 # Enable APIs
 resource "google_project_service" "apis" {
   for_each = toset([
@@ -101,7 +109,7 @@ module "datastream_core" {
   db_password_secret_name      = var.db_password_secret_name
   bigquery_dataset_id          = module.bigquery.bigquery_dataset_id
   wait_for_sql_instance_id     = module.database.time_sleep_wait_for_sql_instance_id
-  allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy.id
+  allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
   cloud_sql_private_ip         = module.database.cloud_sql_private_ip 
   depends_on = [google_project_service.apis, module.database, module.networking]
 }
@@ -117,7 +125,7 @@ module "bigquery" {
   bigquery_contributor_user        = var.bigquery_contributor_user
   datastream_service_account_email = module.datastream_core.datastream_service_account_email
 
-  depends_on = [google_project_service.apis, module.datastream_core]
+  depends_on = [google_project_service.apis]
 }
 
 module "orchestration" {

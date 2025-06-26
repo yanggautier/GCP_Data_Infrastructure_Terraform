@@ -23,6 +23,13 @@ locals {
   source = "../../shared"
 }
 
+
+resource "google_storage_bucket" "state-files-dev" {
+  name          = var.state_file_bucket
+  location      = var.region
+  project       = var.project_id
+  uniform_bucket_level_access = true
+}
 # Enable APIs
 resource "google_project_service" "apis" {
   for_each = toset([
