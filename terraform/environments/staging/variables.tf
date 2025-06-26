@@ -16,8 +16,15 @@ variable "region" {
 variable "environment" {
   description = "Environment for the resources (e.g., dev, staging, prod)"
   type        = string
-  default     = "dev"
+  default     = "staging"
 }
+
+variable "state_file_bucket" {
+  description = "Bucker for state files"
+  type = string
+  default = "state-files-staging" 
+}
+
 
 variable "database_name" {
   description = "Name of the Cloud SQL database"

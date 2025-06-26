@@ -13,6 +13,12 @@ variable "region" {
   default     = "europe-west9"
 }
 
+variable "state_file_bucket" {
+  description = "Bucker for state files"
+  type = string
+  default = "state-files-dev" 
+}
+
 variable "environment" {
   description = "Environment for the resources (e.g., dev, staging, prod)"
   type        = string
