@@ -18,7 +18,9 @@ variable "subnetwork_address" {
   type        = string
 }
 
+/*
 variable "datastream_service_account_email" {
   description = "Email of the Datastream service account."
   type        = string
 }
+*/

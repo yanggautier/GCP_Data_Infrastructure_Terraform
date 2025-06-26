@@ -8,10 +8,11 @@ output "cloud_sql_private_ip" {
   value       = module.database.cloud_sql_private_ip
 }
 
-output "sql_proxy_ip" {
+/*output "sql_proxy_ip" {
   description = "Internal IP address of the SQL proxy VM."
   value       = module.networking.sql_proxy_ip
 }
+*/
 
 output "postgresql_setup_commands" {
   description = "SQL commands to set up PostgreSQL publication and replication slot for Datastream."

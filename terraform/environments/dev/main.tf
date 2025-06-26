@@ -77,6 +77,7 @@ module "database" {
   allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
   datastream_vpc_name          = module.networking.datastream_vpc_name
   datastream_subset_name       = module.networking.datastream_subnet_name
+  private_vpc_connection       = module.networking.private_vpc_connection 
 
   depends_on = [google_project_service.apis, module.networking]
 }
@@ -97,7 +98,7 @@ module "datastream_core" {
   bigquery_dataset_id          = module.bigquery.bigquery_dataset_id
   wait_for_sql_instance_id     = module.database.time_sleep_wait_for_sql_instance_id
   allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy.id
-
+  cloud_sql_private_ip         = module.database.cloud_sql_private_ip 
   depends_on = [google_project_service.apis, module.database, module.networking]
 }
 
@@ -112,7 +113,7 @@ module "bigquery" {
   bigquery_contributor_user        = var.bigquery_contributor_user
   datastream_service_account_email = module.datastream_core.datastream_service_account_email
 
-  depends_on = [google_project_service.apis, module.datastream_core]
+  depends_on = [google_project_service.apis]
 }
 
 module "orchestration" {

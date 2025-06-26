@@ -8,10 +8,12 @@ output "cloud_sql_private_ip" {
   value       = module.database.cloud_sql_private_ip
 }
 
+/*
 output "sql_proxy_ip" {
   description = "Internal IP address of the SQL proxy VM."
   value       = module.database.sql_proxy_ip
 }
+*/
 
 output "postgresql_setup_commands" {
   description = "SQL commands to set up PostgreSQL publication and replication slot for Datastream."
@@ -23,10 +25,11 @@ output "bigquery_dataset_id" {
   value       = module.bigquery.bigquery_dataset_id
 }
 
+/*
 output "datastream_service_account_email" {
   description = "Email of the Datastream service account."
   value       = module.datastream_core.datastream_service_account_email
-}
+}*/
 
 output "datastream_source_connection_profile_id" {
   description = "ID of the Datastream source connection profile."

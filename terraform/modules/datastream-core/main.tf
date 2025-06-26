@@ -68,7 +68,7 @@ resource "google_datastream_connection_profile" "source" {
   connection_profile_id = "postgresql-source-${var.environment}"
 
   postgresql_profile {
-    hostname = var.sql_proxy_ip
+    hostname = var.cloud_sql_private_ip
     port     = 5432
     database = var.database_name
     username = var.database_user_name
@@ -85,9 +85,6 @@ resource "google_datastream_connection_profile" "source" {
   }
 
   depends_on = [
-    var.wait_for_sql_instance_id, # Attendre que l'instance SQL soit prête
-    var.sql_proxy_id,              # Attendre que le proxy SQL soit déployé
-    var.allow_datastream_to_proxy_id, # Attendre la règle de pare-feu
     google_datastream_private_connection.private_connection
   ]
 }

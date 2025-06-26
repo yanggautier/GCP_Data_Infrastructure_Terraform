@@ -27,3 +27,7 @@ output "allow_datastream_to_proxy_id" {
   description = "ID of the firewall rule allowing Datastream to proxy."
   value       = google_compute_firewall.allow_datastream_to_proxy.id
 }
+
+output "private_vpc_connection" {
+  value = google_service_networking_connection.private_vpc_connection
+}

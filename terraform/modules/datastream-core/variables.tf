@@ -23,6 +23,12 @@ variable "private_vpc_connection_id" {
   type        = string
 }
 
+variable "cloud_sql_private_ip" {
+  description = "The private IP address of the Cloud SQL instance."
+  type        = string
+}
+
+/*
 variable "sql_proxy_id" {
   description = "ID of the SQL proxy compute instance."
   type        = string
@@ -32,6 +38,7 @@ variable "sql_proxy_ip" {
   description = "Internal IP address of the SQL proxy VM."
   type        = string
 }
+*/
 
 variable "database_name" {
   description = "Name of the Cloud SQL database."
