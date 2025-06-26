@@ -1,19 +1,15 @@
-# cloudbuild.yaml
 steps:
-  # Étape 1: Initialiser Terraform
   - id: 'terraform-init'
     name: 'hashicorp/terraform:1.11.4'
     args: ['init']
     dir: 'terraform/environments/dev'
 
-  # Étape 2: Valider la configuration Terraform
   - id: 'terraform-validate'
     name: 'hashicorp/terraform:1.11.4'
     args: ['validate']
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-init']
 
-  # Étape 3: Planifier les changements Terraform
   - id: 'terraform-plan'
     name: 'hashicorp/terraform:1.11.4'
     args: ['plan', '-out=tfplan']
@@ -32,7 +28,6 @@ steps:
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-validate']
 
-  # Étape 4: Appliquer les changements Terraform
   - id: 'terraform-apply'
     name: 'hashicorp/terraform:1.11.4'
     args: ['apply', '-auto-approve', 'tfplan']
