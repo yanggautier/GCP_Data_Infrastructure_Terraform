@@ -13,7 +13,13 @@ variable "region" {
 variable "environment" {
   description = "Environment for the resources (e.g., dev, staging, prod)"
   type        = string
-  default     = "staging"
+  default     = "prod"
+}
+
+variable "state_file_bucket" {
+  description = "Bucker for state files"
+  type = string
+  default = "state-files-prod" 
 }
 
 variable "database_name" {

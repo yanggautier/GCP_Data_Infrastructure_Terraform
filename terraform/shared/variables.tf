@@ -53,3 +53,9 @@ variable "subnetwork_address" {
   type        = string
   default     = "10.2.0.0/24"
 }
+
+variable "state_file_bucket" {
+  description = "Bucker for state files"
+  type = string
+  default = "state-files-dev" 
+}

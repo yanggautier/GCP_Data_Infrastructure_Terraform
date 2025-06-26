@@ -6,10 +6,10 @@ terraform {
       version = "~> 5.0"
     }
   }
-
+  
   backend "gcs" {
-    bucket = "state-files-production"
-    prefix = "terraform/state-production"
+    bucket = "state-files-dev"
+    prefix = "terraform/state"
   }
 }
 
@@ -23,12 +23,13 @@ locals {
   source = "../../shared"
 }
 
-# Get secret form Secret Manager
-data "google_secret_manager_secret_version" "db_password_secret" {
-  secret  = "postgres-instance-password"
-  project = var.project_id
-}
 
+resource "google_storage_bucket" "state-files-dev" {
+  name          = var.state_file_bucket
+  location      = var.region
+  project       = var.project_id
+  uniform_bucket_level_access = true
+}
 # Enable APIs
 resource "google_project_service" "apis" {
   for_each = toset([
@@ -55,8 +56,9 @@ module "networking" {
   region                           = var.region
   environment                      = var.environment
   subnetwork_address               = var.subnetwork_address
-  datastream_service_account_email = module.datastream_core.datastream_service_account_email
-  cloud_sql_private_ip             = module.database.cloud_sql_private_ip
+  # datastream_service_account_email = module.datastream_core.datastream_service_account_email
+
+  depends_on = [google_project_service.apis]
 }
 
 module "storage" {
@@ -64,23 +66,32 @@ module "storage" {
   project_id  = var.project_id
   region      = var.region
   environment = var.environment
+
+  depends_on = [google_project_service.apis]
 }
 
 module "database" {
-  source                    = "../../modules/database"
-  project_id                = var.project_id
-  region                    = var.region
-  environment               = var.environment
-  database_name             = var.database_name
-  database_user_name        = var.database_user_name
-  datastream_vpc_id         = module.networking.datastream_vpc_id
-  private_vpc_connection_id = module.networking.private_ip_alloc_name
-  instance_tier             = local.current_env.instance_tier
-  disk_size                 = local.current_env.disk_size
-  backup_enabled            = local.current_env.backup_enabled
-  deletion_protection       = local.current_env.deletion_protection
-  max_replication_slots     = local.current_env.max_replication_slots
-  max_wal_senders           = local.current_env.max_wal_senders
+  source                       = "../../modules/database"
+  project_id                   = var.project_id
+  region                       = var.region
+  environment                  = var.environment
+  database_name                = var.database_name
+  database_user_name           = var.database_user_name
+  datastream_vpc_id            = module.networking.datastream_vpc_id
+  private_vpc_connection_id    = module.networking.private_ip_alloc_name
+  instance_tier                = local.current_env.instance_tier
+  disk_size                    = local.current_env.disk_size
+  backup_enabled               = local.current_env.backup_enabled
+  deletion_protection          = local.current_env.deletion_protection
+  max_replication_slots        = local.current_env.max_replication_slots
+  max_wal_senders              = local.current_env.max_wal_senders
+  db_password_secret_name      = var.db_password_secret_name
+  allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
+  datastream_vpc_name          = module.networking.datastream_vpc_name
+  datastream_subset_name       = module.networking.datastream_subnet_name
+  private_vpc_connection       = module.networking.private_vpc_connection 
+
+  depends_on = [google_project_service.apis, module.networking]
 }
 
 # Remplacez l'ancien module "datastream" par "datastream_core"
@@ -91,14 +102,16 @@ module "datastream_core" {
   environment                  = var.environment
   datastream_vpc_id            = module.networking.datastream_vpc_id
   private_vpc_connection_id    = module.networking.private_ip_alloc_name
-  sql_proxy_id                 = module.networking.sql_proxy_id
-  sql_proxy_ip                 = module.networking.sql_proxy_ip
+  # sql_proxy_id                 = module.database.sql_proxy_id
+  # sql_proxy_ip                 = module.database.sql_proxy_ip
   database_name                = var.database_name
   database_user_name           = var.database_user_name
-  db_password                  = data.google_secret_manager_secret_version.db_password_secret.secret_data
+  db_password_secret_name      = var.db_password_secret_name
   bigquery_dataset_id          = module.bigquery.bigquery_dataset_id
   wait_for_sql_instance_id     = module.database.time_sleep_wait_for_sql_instance_id
   allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
+  cloud_sql_private_ip         = module.database.cloud_sql_private_ip 
+  depends_on = [google_project_service.apis, module.database, module.networking]
 }
 
 
@@ -111,6 +124,8 @@ module "bigquery" {
   bigquery_analyst_user            = var.bigquery_analyst_user
   bigquery_contributor_user        = var.bigquery_contributor_user
   datastream_service_account_email = module.datastream_core.datastream_service_account_email
+
+  depends_on = [google_project_service.apis]
 }
 
 module "orchestration" {
@@ -118,6 +133,8 @@ module "orchestration" {
   project_id  = var.project_id
   region      = var.region
   environment = var.environment
+
+  depends_on = [google_project_service.apis]
 }
 
 module "datastream_stream" {
@@ -130,6 +147,9 @@ module "datastream_stream" {
   destination_connection_profile_object = module.datastream_core.datastream_destination_connection_profile_object
 
   depends_on = [
-    module.datastream_core
+    google_project_service.apis,
+    module.datastream_core,
+    module.database.datastream_setup,
+    module.database.postgresql_setup_completed
   ]
 }
