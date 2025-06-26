@@ -1,7 +1,9 @@
+# Définitions des variables globales partagées
+
 variable "project_id" {
   description = "DVD Project ID"
   type        = string
-  default     = "dvd-rental-project" # Replace with your GCP project ID
+  default     = "dbt-project-dvd-rent" # Replace by you projet GCP ID
 }
 
 variable "region" {
@@ -17,7 +19,6 @@ variable "environment" {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
   }
-  default = "dev"
 }
 
 variable "database_name" {
@@ -27,27 +28,28 @@ variable "database_name" {
 }
 
 variable "database_user_name" {
-  description = "Cloud SQL user "
+  description = "Cloud SQL user"
   type        = string
   default     = "dvd_rental_user"
 }
 
-
 variable "bigquery_owner_user" {
-  description = "value for the owner of the BigQuery dataset"
+  description = "Email for the owner of the BigQuery dataset"
   type        = string
-  default     = "yangguole@outlook.com"
 }
 
 variable "bigquery_analyst_user" {
-  description = "Email of the first analyst user"
+  description = "Email of the BigQuery analyst user"
   type        = string
-  default     = "inmoglio@gmail.com"
 }
 
 variable "bigquery_contributor_user" {
-  description = "Email of the first analyst user"
+  description = "Email of the BigQuery contributor user"
   type        = string
-  default     = "guoleyang@gmail.com"
 }
 
+variable "subnetwork_address" {
+  description = "CIDR range for the Datastream subnetwork"
+  type        = string
+  default     = "10.2.0.0/24"
+}
