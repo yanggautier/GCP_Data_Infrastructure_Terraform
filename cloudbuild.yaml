@@ -16,7 +16,7 @@ steps:
   # Étape 3: Planifier les changements Terraform
   - id: 'terraform-plan'
     name: 'hashicorp/terraform:1.11.4'
-    args: ['plan']
+    args: ['plan', '-out=tfplan']
     env:
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
@@ -35,7 +35,7 @@ steps:
   # Étape 4: Appliquer les changements Terraform
   - id: 'terraform-apply'
     name: 'hashicorp/terraform:1.11.4'
-    args: ['apply', '-auto-approve']
+    args: ['apply', '-auto-approve', 'tfplan']
     env:
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
@@ -61,8 +61,8 @@ substitutions:
   _SUBNETWORK_ADDRESS: '10.0.0.0/24'
   _DATABASE_NAME: 'dvd_rental_db'
   _DATABASE_USER_NAME: 'datastream_user'
-  _DB_PASSWORD_SECRET_NAME: 'your-db-password-secret' # Le nom du secret dans Secret Manager
-  _BIGQUERY_OWNER_USER: 'user-owner@example.com' # Remplacez par vos utilisateurs
+  _DB_PASSWORD_SECRET_NAME: 'your-db-password-secret'
+  _BIGQUERY_OWNER_USER: 'user-owner@example.com'
   _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
   _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
-  _VPC_NETWORK_NAME: 'datastream-vpc' # Nom de votre VPC créé par Terraform
+  _VPC_NETWORK_NAME: 'datastream-vpc' 
