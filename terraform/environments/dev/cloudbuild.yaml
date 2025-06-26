@@ -30,11 +30,10 @@ steps:
     dir: '.'
 
 options:
-  network: projects/${_PROJECT_ID}/global/networks/${_VPC_NETWORK_NAME}
   logging: CLOUD_LOGGING_ONLY
 
 
-:
+substitutions:
   _PROJECT_ID: 'dbt-project-dvd-rent' 
   _REGION: 'europe-west9' 
   _ENVIRONMENT: 'dev' 
