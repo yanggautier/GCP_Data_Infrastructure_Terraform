@@ -97,7 +97,7 @@ module "datastream_core" {
   db_password_secret_name      = var.db_password_secret_name
   bigquery_dataset_id          = module.bigquery.bigquery_dataset_id
   wait_for_sql_instance_id     = module.database.time_sleep_wait_for_sql_instance_id
-  allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy.id
+  allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
   cloud_sql_private_ip         = module.database.cloud_sql_private_ip 
   depends_on = [google_project_service.apis, module.database, module.networking]
 }
