@@ -6,6 +6,10 @@ terraform {
       version = "~> 5.0"
     }
   }
+  backend "gcs" {
+    bucket = "state-files-staging"
+    prefix = "terraform/state-staging"
+  }
 }
 
 provider "google" {
