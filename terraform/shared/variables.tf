@@ -3,7 +3,7 @@
 variable "project_id" {
   description = "DVD Project ID"
   type        = string
-  default     = "dbt-project-dvd-rent" # Replace by you projet GCP ID
+  default     = "dbt-project-dvd-rent-464116" # Replace by you projet GCP ID
 }
 
 variable "region" {
