@@ -4,7 +4,7 @@
 variable "project_id" {
   description = "DVD Project ID"
   type        = string
-  default     = "dbt-project-dvd-rent"
+  default     = "dbt-project-dvd-rent-464116"
 }
 
 variable "region" {
