@@ -10,7 +10,7 @@ output "cloud_sql_private_ip" {
 
 output "sql_proxy_ip" {
   description = "Internal IP address of the SQL proxy VM."
-  value       = module.database.sql_proxy_ip
+  value       = module.networking.sql_proxy_ip
 }
 
 output "postgresql_setup_commands" {

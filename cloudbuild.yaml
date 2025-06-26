@@ -1,0 +1,48 @@
+# cloudbuild.yaml
+steps:
+  # Étape 1: Télécharger le client PostgreSQL et netcat
+  # Nécessaire pour le script configure_postgresql.sh.tpl
+  - id: 'install-deps'
+    name: 'ubuntu' # Une image de base pour installer des outils
+    args: ['bash', '-c', 'apt-get update && apt-get install -y postgresql-client netcat-traditional']
+
+  # Étape 2: Initialiser Terraform
+  - id: 'terraform-init'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['init']
+    dir: '.' # Le répertoire de travail est la racine du dépôt
+
+  # Étape 3: Appliquer les changements Terraform
+  - id: 'terraform-apply'
+    name: 'hashicorp/terraform:1.11.4' # Remplacez 1.x.x par votre version de Terraform
+    args: ['apply', '--auto-approve']
+    env: # Passez vos variables Terraform en tant que variables d'environnement TF_VAR_
+      - 'TF_VAR_project_id=${_PROJECT_ID}'
+      - 'TF_VAR_region=${_REGION}'
+      - 'TF_VAR_environment=${_ENVIRONMENT}'
+      - 'TF_VAR_subnetwork_address=${_SUBNETWORK_ADDRESS}'
+      - 'TF_VAR_database_name=${_DATABASE_NAME}'
+      - 'TF_VAR_database_user_name=${_DATABASE_USER_NAME}'
+      - 'TF_VAR_db_password_secret_name=${_DB_PASSWORD_SECRET_NAME}'
+      - 'TF_VAR_bigquery_owner_user=${_BIGQUERY_OWNER_USER}'
+      - 'TF_VAR_bigquery_analyst_user=${_BIGQUERY_ANALYST_USER}'
+      - 'TF_VAR_bigquery_contributor_user=${_BIGQUERY_CONTRIBUTOR_USER}'
+    dir: '.'
+
+options:
+  network: projects/${_PROJECT_ID}/global/networks/${_VPC_NETWORK_NAME}
+  logging: CLOUD_LOGGING_ONLY
+
+
+:
+  _PROJECT_ID: 'dbt-project-dvd-rent' 
+  _REGION: 'europe-west9' 
+  _ENVIRONMENT: 'dev' 
+  _SUBNETWORK_ADDRESS: '10.0.0.0/24'
+  _DATABASE_NAME: 'dvd_rental_db'
+  _DATABASE_USER_NAME: 'datastream_user'
+  _DB_PASSWORD_SECRET_NAME: 'your-db-password-secret' # Le nom du secret dans Secret Manager
+  _BIGQUERY_OWNER_USER: 'user-owner@example.com' # Remplacez par vos utilisateurs
+  _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
+  _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
+  _VPC_NETWORK_NAME: 'datastream-vpc' # Nom de votre VPC créé par Terraform

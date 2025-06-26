@@ -10,7 +10,7 @@ output "cloud_sql_private_ip" {
 
 output "sql_proxy_ip" {
   description = "Internal IP address of the SQL proxy VM."
-  value       = module.database.sql_proxy_ip
+  value       = module.networking.sql_proxy_ip
 }
 
 output "postgresql_setup_commands" {
@@ -30,12 +30,12 @@ output "datastream_service_account_email" {
 
 output "datastream_source_connection_profile_id" {
   description = "ID of the Datastream source connection profile."
-  value       = module.datastream_core.datastream_source_connection_profile_id
+  value       = module.datastream.datastream_source_connection_profile_id
 }
 
 output "datastream_destination_connection_profile_id" {
   description = "ID of the Datastream destination connection profile."
-  value       = module.datastream_core.datastream_destination_connection_profile_id
+  value       = module.datastream.datastream_destination_connection_profile_id
 }
 
 output "composer_environment_name" {
