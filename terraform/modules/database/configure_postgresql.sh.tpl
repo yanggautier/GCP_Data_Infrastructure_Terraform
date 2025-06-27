@@ -9,11 +9,11 @@ DB_USER_NAME="${db_user_name}"
 DB_NAME="${db_name}"
 DB_PASSWORD="${db_password}"
 SQL_SCRIPT_PATH="${sql_script_path}"
+CLOUD_SQL_PRIVATE_IP= "${private_ip_address}"
 
 # Get the private IP address of the Cloud SQL instance
 echo "Retrieving private IP for Cloud SQL instance: $SQL_INSTANCE_NAME..."
-CLOUD_SQL_PRIVATE_IP=$(gcloud sql instances describe "$SQL_INSTANCE_NAME" --project="$PROJECT_ID" --format="value(ipAddresses.privateIpAddress)")
-
+git push --set-upstream origin hotfix/configure_postgresql
 if [ -z "$CLOUD_SQL_PRIVATE_IP" ]; then
   echo "Error: Could not retrieve private IP for instance $SQL_INSTANCE_NAME."
   exit 1

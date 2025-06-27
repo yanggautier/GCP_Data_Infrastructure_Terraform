@@ -185,8 +185,8 @@ resource "null_resource" "configure_postgresql_for_datastream" {
       db_name           = var.database_name
       db_password       = data.google_secret_manager_secret_version.db_password_secret.secret_data
       sql_script_path   = "${path.module}/setup_replication.sql"
-      sql_instance_name    = google_sql_database_instance.dvd_rental_sql_postgresql.name
-
+      sql_instance_name = google_sql_database_instance.dvd_rental_sql_postgresql.name
+      private_ip_address =google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
       # You could also pass CLOUD_SQL_PROXY_PATH here if it needs to be dynamic
       # cloud_sql_proxy_path = "/usr/local/bin/cloud-sql-proxy"
     })
