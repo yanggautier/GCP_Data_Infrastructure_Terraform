@@ -22,17 +22,6 @@ output "postgresql_setup_commands" {
     EOF
 }
 
-/*
-output "sql_proxy_ip" {
-  description = "Internal IP address of the SQL proxy VM."
-  value       = google_compute_instance.sql_proxy.network_interface[0].network_ip
-}
-
-output "sql_proxy_id" {
-  description = "ID of the SQL proxy compute instance."
-  value       = google_compute_instance.sql_proxy.id
-} 
-*/
 
 output "time_sleep_wait_for_sql_instance_id" {
   description = "ID of time sleep"

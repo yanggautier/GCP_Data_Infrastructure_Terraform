@@ -63,12 +63,6 @@ variable "max_wal_senders" {
   type        = number
 }
 
-variable "allow_datastream_to_proxy_id" {
-  description = "ID of the firewall rule allowing Datastream to proxy for explicit dependency."
-  type        = string
-  default     = ""
-}
-
 variable "db_password_secret_name" {
   description = "Name of the Secret Manager secret holding the database password"
   type        = string

@@ -85,77 +85,6 @@ resource "time_sleep" "wait_for_sql_instance" {
   create_duration = "120s" # Attendre 2 minutes pour que l'instance soit entièrement prête
 }
 
-
-/*
-# Create a service account for the SQL proxy VM
-resource "google_service_account" "sql_proxy_sa" {
-  account_id   = "sql-proxy-${var.environment}"
-  display_name = "SQL Proxy Service Account"
-  project      = var.project_id
-}
-
-# Grant necessary permissions to the service account
-resource "google_project_iam_member" "sql_proxy_client" {
-  project = var.project_id
-  role    = "roles/cloudsql.client"
-  member  = "serviceAccount:${google_service_account.sql_proxy_sa.email}"
-}
-
-# Update the compute instance to use the proper service account
-resource "google_compute_instance" "sql_proxy" {
-  name         = "sql-proxy-${var.environment}"
-  machine_type = "e2-micro"
-  zone         = "${var.region}-a"
-  project      = var.project_id
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-      size  = 10
-    }
-  }
-
-  network_interface {
-    network    = var.datastream_vpc_name
-    subnetwork = var.datastream_subset_name
-  }
-
-  # Fixed service account configuration
-  service_account {
-    email  = google_service_account.sql_proxy_sa.email
-    scopes = ["cloud-platform"]
-  }
-
-  tags = ["sql-proxy"]
-
-  metadata_startup_script = <<-EOF
-#!/bin/bash
-apt-get update
-apt-get install -y postgresql-client socat
-
-# Create a service to forward connections to Cloud SQL
-cat > /etc/systemd/system/sql-proxy.service << 'EOL'
-[Unit]
-Description=SQL Proxy Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/bin/socat TCP4-LISTEN:5432,fork,reuseaddr TCP4:${google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address}:5432
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-systemctl enable sql-proxy.service
-systemctl start sql-proxy.service
-EOF
-}
-*/
-
 resource "null_resource" "configure_postgresql_for_datastream" {
   triggers = {
     sql_instance_id      = google_sql_database_instance.dvd_rental_sql_postgresql.id
@@ -187,8 +116,6 @@ resource "null_resource" "configure_postgresql_for_datastream" {
       sql_script_path   = "${path.module}/setup_replication.sql"
       sql_instance_name = google_sql_database_instance.dvd_rental_sql_postgresql.name
       private_ip_address =google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
-      # You could also pass CLOUD_SQL_PROXY_PATH here if it needs to be dynamic
-      # cloud_sql_proxy_path = "/usr/local/bin/cloud-sql-proxy"
     })
     
     # working_dir is set on the provisioner level, not in the template.

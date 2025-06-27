@@ -49,4 +49,4 @@ else
   exit 1
 fi
 
-echo "No local proxy started, no cleanup needed."
+echo "No cleanup needed."

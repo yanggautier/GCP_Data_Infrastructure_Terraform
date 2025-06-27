@@ -5,7 +5,6 @@
 ## Settings
 1. Install Terraform on your machine
 2. Install Google Cloud CLI
-3. Install cloud-sql-proxy on your machine and update the path of cloud-sql-proxy in ./terraform/modules/database
 After installing the Google Cloud CLI, initialize it by running the following command:
 ```bash
 gcloud init

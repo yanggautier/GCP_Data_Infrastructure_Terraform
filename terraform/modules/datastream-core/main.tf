@@ -60,7 +60,6 @@ data "google_secret_manager_secret_version" "db_password_secret" {
 }
 
 
-# Crée un profil de connexion Datastream pour la source PostgreSQL (via proxy)
 resource "google_datastream_connection_profile" "source" {
   display_name        = "PostgreSQL Source Connection Profile"
   project             = var.project_id

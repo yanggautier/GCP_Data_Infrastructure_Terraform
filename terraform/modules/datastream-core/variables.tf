@@ -28,17 +28,6 @@ variable "cloud_sql_private_ip" {
   type        = string
 }
 
-/*
-variable "sql_proxy_id" {
-  description = "ID of the SQL proxy compute instance."
-  type        = string
-}
-
-variable "sql_proxy_ip" {
-  description = "Internal IP address of the SQL proxy VM."
-  type        = string
-}
-*/
 
 variable "database_name" {
   description = "Name of the Cloud SQL database."
@@ -57,11 +46,6 @@ variable "bigquery_dataset_id" {
 
 variable "wait_for_sql_instance_id" {
   description = "ID of the time_sleep resource waiting for SQL instance readiness."
-  type        = string
-}
-
-variable "allow_datastream_to_proxy_id" {
-  description = "ID of the firewall rule allowing Datastream to proxy."
   type        = string
 }
 
