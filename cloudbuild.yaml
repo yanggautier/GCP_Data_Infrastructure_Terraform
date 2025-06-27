@@ -1,19 +1,18 @@
 steps:
   - id: 'terraform-init'
     name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash' 
+    entrypoint: 'bash'
     args:
       - '-c'
       - |
-        TERRAFORM_VERSION="1.11.4" # Utilisez la même version que vous aviez
         curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         mv terraform /usr/local/bin/
         rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         
-        # Exécutez la commande init
         terraform init
-
+    env:
+      - 'TERRAFORM_VERSION=1.11.4'
     dir: 'terraform/environments/dev'
 
   - id: 'terraform-validate'
@@ -22,15 +21,14 @@ steps:
     args:
       - '-c'
       - |
-        TERRAFORM_VERSION="1.11.4"
         curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         mv terraform /usr/local/bin/
         rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         
-        # Exécutez la commande validate
         terraform validate
-
+    env:
+      - 'TERRAFORM_VERSION=1.11.4'
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-init']
 
@@ -40,15 +38,14 @@ steps:
     args:
       - '-c'
       - |
-        TERRAFORM_VERSION="1.11.4"
         curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         mv terraform /usr/local/bin/
         rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         
-        # Exécutez la commande plan
         terraform plan -out=tfplan
-    env: # Vos variables d'environnement restent identiques
+    env: 
+      - 'TERRAFORM_VERSION=1.11.4'
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
       - 'TF_VAR_environment=${_ENVIRONMENT}'
@@ -69,17 +66,14 @@ steps:
     args:
       - '-c'
       - |
-        TERRAFORM_VERSION="1.11.4"
         curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         mv terraform /usr/local/bin/
         rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
         
-        # execute apply
         terraform apply -auto-approve tfplan
-        
-
-    env: # Vos variables d'environnement restent identiques
+    env: 
+      - 'TERRAFORM_VERSION=1.11.4'
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
       - 'TF_VAR_environment=${_ENVIRONMENT}'
