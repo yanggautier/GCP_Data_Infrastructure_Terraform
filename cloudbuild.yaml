@@ -5,6 +5,11 @@ steps:
     args:
       - '-c'
       - |
+        apt-get update && apt-get install -y \
+          unzip \
+          netcat-traditional \
+          postgresql-client # Assurez-vous que psql est là pour le local-exec
+        
         curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
         unzip terraform_1.11.4_linux_amd64.zip
         mv terraform /usr/local/bin/
@@ -19,6 +24,11 @@ steps:
     args:
       - '-c'
       - |
+        apt-get update && apt-get install -y \
+          unzip \
+          netcat-traditional \
+          postgresql-client
+        
         curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
         unzip terraform_1.11.4_linux_amd64.zip
         mv terraform /usr/local/bin/
@@ -34,6 +44,11 @@ steps:
     args:
       - '-c'
       - |
+        apt-get update && apt-get install -y \
+          unzip \
+          netcat-traditional \
+          postgresql-client
+        
         curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
         unzip terraform_1.11.4_linux_amd64.zip
         mv terraform /usr/local/bin/
@@ -61,13 +76,18 @@ steps:
     args:
       - '-c'
       - |
+        apt-get update && apt-get install -y \
+          unzip \
+          netcat-traditional \
+          postgresql-client
+        
         curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
         unzip terraform_1.11.4_linux_amd64.zip
         mv terraform /usr/local/bin/
         rm terraform_1.11.4_linux_amd64.zip
         
         terraform apply -auto-approve tfplan
-    env: 
+    env:
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
       - 'TF_VAR_environment=${_ENVIRONMENT}'
@@ -98,4 +118,4 @@ substitutions:
   _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
   _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
   _VPC_NETWORK_NAME: 'datastream-vpc'
-  _PRIVATE_POOL_NAME: 'private-pool'
+  _PRIVATE_POOL_NAME: 'private-pool' 
