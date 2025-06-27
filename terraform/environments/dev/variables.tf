@@ -15,8 +15,8 @@ variable "region" {
 
 variable "state_file_bucket" {
   description = "Bucker for state files"
-  type = string
-  default = "state-files-dev" 
+  type        = string
+  default     = "state-files-dev"
 }
 
 variable "environment" {
@@ -103,6 +103,6 @@ locals {
 
 variable "secret_version" {
   description = "Version of secret in Secret Manager"
-  type = number
-  default = 1
+  type        = number
+  default     = 1
 }

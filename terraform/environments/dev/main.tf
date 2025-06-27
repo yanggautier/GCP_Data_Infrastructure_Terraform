@@ -6,7 +6,7 @@ terraform {
       version = "~> 5.0"
     }
   }
-  
+
   backend "gcs" {
     bucket = "state-files-dev"
     prefix = "terraform/state"
@@ -25,9 +25,9 @@ locals {
 
 
 resource "google_storage_bucket" "state-files-dev" {
-  name          = var.state_file_bucket
-  location      = var.region
-  project       = var.project_id
+  name                        = var.state_file_bucket
+  location                    = var.region
+  project                     = var.project_id
   uniform_bucket_level_access = true
 
   # Prevent accidental deletion
@@ -60,11 +60,11 @@ resource "google_project_service" "apis" {
 
 
 module "networking" {
-  source                           = "../../modules/networking"
-  project_id                       = var.project_id
-  region                           = var.region
-  environment                      = var.environment
-  subnetwork_address               = var.subnetwork_address
+  source             = "../../modules/networking"
+  project_id         = var.project_id
+  region             = var.region
+  environment        = var.environment
+  subnetwork_address = var.subnetwork_address
   # datastream_service_account_email = module.datastream_core.datastream_service_account_email
 
   depends_on = [google_project_service.apis]
@@ -99,19 +99,19 @@ module "database" {
   allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
   datastream_vpc_name          = module.networking.datastream_vpc_name
   datastream_subset_name       = module.networking.datastream_subnet_name
-  private_vpc_connection       = module.networking.private_vpc_connection 
+  private_vpc_connection       = module.networking.private_vpc_connection
 
   depends_on = [google_project_service.apis, module.networking]
 }
 
 # Remplacez l'ancien module "datastream" par "datastream_core"
 module "datastream_core" {
-  source                       = "../../modules/datastream-core"
-  project_id                   = var.project_id
-  region                       = var.region
-  environment                  = var.environment
-  datastream_vpc_id            = module.networking.datastream_vpc_id
-  private_vpc_connection_id    = module.networking.private_ip_alloc_name
+  source                    = "../../modules/datastream-core"
+  project_id                = var.project_id
+  region                    = var.region
+  environment               = var.environment
+  datastream_vpc_id         = module.networking.datastream_vpc_id
+  private_vpc_connection_id = module.networking.private_ip_alloc_name
   # sql_proxy_id                 = module.database.sql_proxy_id
   # sql_proxy_ip                 = module.database.sql_proxy_ip
   database_name                = var.database_name
@@ -120,8 +120,8 @@ module "datastream_core" {
   bigquery_dataset_id          = module.bigquery.bigquery_dataset_id
   wait_for_sql_instance_id     = module.database.time_sleep_wait_for_sql_instance_id
   allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
-  cloud_sql_private_ip         = module.database.cloud_sql_private_ip 
-  depends_on = [google_project_service.apis, module.database, module.networking]
+  cloud_sql_private_ip         = module.database.cloud_sql_private_ip
+  depends_on                   = [google_project_service.apis, module.database, module.networking]
 }
 
 
