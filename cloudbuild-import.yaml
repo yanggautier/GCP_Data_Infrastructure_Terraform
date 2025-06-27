@@ -10,11 +10,77 @@ steps:
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-init']
 
-  - id: 'terraform-import'
-    name: 'hashicorp/terraform:1.11.4' 
+  # Import existing resources to avoid conflicts
+  - id: 'import-vpc'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['import', 'module.networking.google_compute_network.datastream_vpc', 'projects/dbt-project-dvd-rent-464116/global/networks/datastream-vpc']
+    dir: 'terraform/environments/dev'
+    waitFor: ['terraform-validate']
+    allowFailure: true  # Continue even if import fails (resource might not exist)
+
+  - id: 'import-cloud-run'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['import', 'module.orchestration.google_cloud_run_service.dbt_runner', 'locations/europe-west9/namespaces/dbt-project-dvd-rent-464116/services/dbt-runner']
+    dir: 'terraform/environments/dev'
+    waitFor: ['import-vpc']
+    allowFailure: true
+
+  - id: 'import-service-account'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['import', 'module.orchestration.google_service_account.cloud_composer_service_account', 'projects/dbt-project-dvd-rent-464116/serviceAccounts/composer-service-account@dbt-project-dvd-rent-464116.iam.gserviceaccount.com']
+    dir: 'terraform/environments/dev'
+    waitFor: ['import-cloud-run']
+    allowFailure: true
+
+  - id: 'import-artifact-registry'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['import', 'module.orchestration.google_artifact_registry_repository.dbt_repo', 'projects/dbt-project-dvd-rent-464116/locations/europe-west9/repositories/dbt-repo']
+    dir: 'terraform/environments/dev'
+    waitFor: ['import-service-account']
+    allowFailure: true
+
+  - id: 'import-state-bucket'
+    name: 'hashicorp/terraform:1.11.4'
     args: ['import', 'google_storage_bucket.state-files-dev', 'state-files-dev']
     dir: 'terraform/environments/dev'
-    waitFor: ['terraform-validate'] 
+    waitFor: ['import-artifact-registry']
+    allowFailure: true
+
+  # Plan to see what changes are needed
+  - id: 'terraform-plan'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['plan', '-out=tfplan']
+    env:
+      - 'TF_VAR_project_id=${_PROJECT_ID}'
+      - 'TF_VAR_region=${_REGION}'
+      - 'TF_VAR_environment=${_ENVIRONMENT}'
+      - 'TF_VAR_subnetwork_address=${_SUBNETWORK_ADDRESS}'
+      - 'TF_VAR_database_name=${_DATABASE_NAME}'
+      - 'TF_VAR_database_user_name=${_DATABASE_USER_NAME}'
+      - 'TF_VAR_db_password_secret_name=${_DB_PASSWORD_SECRET_NAME}'
+      - 'TF_VAR_bigquery_owner_user=${_BIGQUERY_OWNER_USER}'
+      - 'TF_VAR_bigquery_analyst_user=${_BIGQUERY_ANALYST_USER}'
+      - 'TF_VAR_bigquery_contributor_user=${_BIGQUERY_CONTRIBUTOR_USER}'
+      - 'TF_VAR_vpc_network_name=${_VPC_NETWORK_NAME}'
+      - 'TF_VAR_state_file_bucket=${_STATE_FILE_BUCKET}'
+      - 'TF_VAR_secret_version=${_SECRET_VERSION}'
+    dir: 'terraform/environments/dev'
+    waitFor: ['import-state-bucket']
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _PROJECT_ID: 'dbt-project-dvd-rent-464116'
+  _REGION: 'us-central1'
+  _ENVIRONMENT: 'dev'
+  _SUBNETWORK_ADDRESS: '10.0.0.0/24'
+  _DATABASE_NAME: 'dvd_rental_db'
+  _DATABASE_USER_NAME: 'datastream_user'
+  _DB_PASSWORD_SECRET_NAME: 'postgres-instance-password'
+  _BIGQUERY_OWNER_USER: 'user-owner@example.com'
+  _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
+  _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
+  _VPC_NETWORK_NAME: 'datastream-vpc'
+  _STATE_FILE_BUCKET: 'state-files-dev'
+  _SECRET_VERSION: '1'
