@@ -1,6 +1,7 @@
 # Récupère le mot de passe de la base de données depuis Secret Manager
 data "google_secret_manager_secret_version" "db_password_secret" {
   secret  = var.db_password_secret_name
+  version = var.secret_version
   project = var.project_id
 }
 

@@ -100,3 +100,9 @@ locals {
   }
   current_env = local.env_config[var.environment]
 }
+
+variable "secret_version" {
+  description = "Version of secret in Secret Manager"
+  type = number
+  default = 1
+}
