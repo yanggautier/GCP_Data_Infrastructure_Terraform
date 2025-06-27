@@ -48,6 +48,8 @@ steps:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  workerPool: 'projects/${_PROJECT_ID}/locations/${_REGION}/workerPools/${_PRIVATE_POOL_NAME}'
+
 
 substitutions:
   _PROJECT_ID: 'dbt-project-dvd-rent' 
