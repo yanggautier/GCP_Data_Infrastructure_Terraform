@@ -29,6 +29,15 @@ resource "google_storage_bucket" "state-files-dev" {
   location      = var.region
   project       = var.project_id
   uniform_bucket_level_access = true
+
+  # Prevent accidental deletion
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [
+      location,
+      project,
+    ]
+  }
 }
 # Enable APIs
 resource "google_project_service" "apis" {
