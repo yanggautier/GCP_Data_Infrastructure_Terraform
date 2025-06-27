@@ -24,7 +24,7 @@ locals {
 }
 
 
-resource "google_storage_bucket" "state-files-dev" {
+resource "google_storage_bucket" "state-files-prod" {
   name          = var.state_file_bucket
   location      = var.region
   project       = var.project_id
@@ -86,6 +86,7 @@ module "database" {
   max_replication_slots        = local.current_env.max_replication_slots
   max_wal_senders              = local.current_env.max_wal_senders
   db_password_secret_name      = var.db_password_secret_name
+  secret_version               = var.secret_version
   allow_datastream_to_proxy_id = module.networking.allow_datastream_to_proxy_id
   datastream_vpc_name          = module.networking.datastream_vpc_name
   datastream_subset_name       = module.networking.datastream_subnet_name

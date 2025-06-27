@@ -88,3 +88,8 @@ variable "private_vpc_connection" {
   description = "The google_service_networking_connection resource."
   type        = any 
 }
+
+variable "secret_version" {
+  description = "Version of secret in Secret Manager"
+  type = number
+}

@@ -4,7 +4,7 @@
 variable "project_id" {
   description = "DVD Project ID"
   type        = string
-  default     = "dbt-project-dvd-rent"
+  default     = "dbt-project-dvd-rent-464116"
 }
 
 variable "region" {
@@ -13,18 +13,17 @@ variable "region" {
   default     = "europe-west9"
 }
 
+variable "state_file_bucket" {
+  description = "Bucker for state files"
+  type = string
+  default = "state-files-staing" 
+}
+
 variable "environment" {
   description = "Environment for the resources (e.g., dev, staging, prod)"
   type        = string
   default     = "staging"
 }
-
-variable "state_file_bucket" {
-  description = "Bucker for state files"
-  type = string
-  default = "state-files-staging" 
-}
-
 
 variable "database_name" {
   description = "Name of the Cloud SQL database"
@@ -100,4 +99,10 @@ locals {
     }
   }
   current_env = local.env_config[var.environment]
+}
+
+variable "secret_version" {
+  description = "Version of secret in Secret Manager"
+  type = number
+  default = 1
 }
