@@ -49,7 +49,7 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
     var.subnetwork_address, # Datastream subnet
     "10.3.0.0/24",        # Private connection subnet for Datastream
     "169.254.0.0/16",     # Google internal networking
-    google_compute_global_address.private_ip_alloc.address,
+    "${google_compute_global_address.private_ip_alloc.address}/${google_compute_global_address.private_ip_alloc.prefix_length}"
   ]
   priority    = 1000
 }
@@ -73,43 +73,4 @@ resource "google_compute_firewall" "allow_internal" {
   direction   = "INGRESS"
   source_ranges = ["10.0.0.0/8"]
   priority    = 65534
-}
-
-# Règle de pare-feu pour le proxy SQL
-resource "google_compute_firewall" "allow_datastream_to_proxy" {
-  name    = "allow-datastream-to-proxy"
-  network = google_compute_network.datastream_vpc.name
-  project = var.project_id
-  allow {
-    protocol = "tcp"
-    ports    = ["5432"]
-  }
-  direction     = "INGRESS"
-  source_ranges = [
-    "10.3.0.0/24",
-    var.subnetwork_address 
-  ] # Datastream private connection subnet
-  priority      = 1000
-}
-
-# Add SSH access for debugging (can be removed in production)
-resource "google_compute_firewall" "allow_ssh" {
-  name    = "allow-ssh-${var.environment}"
-  network = google_compute_network.datastream_vpc.name
-  project = var.project_id
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  direction     = "INGRESS"
-  source_ranges = ["35.235.240.0/20"] # Google Cloud IAP range
-  target_tags   = ["sql-proxy"]
-  priority      = 1000
-
-  description = "Allow SSH access through IAP"
-  
-  # Only create in non-production environments
-  count = var.environment != "prod" ? 1 : 0
 }
