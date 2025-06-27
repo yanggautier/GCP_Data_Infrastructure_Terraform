@@ -1,0 +1,86 @@
+steps:
+  - id: 'terraform-init'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['init']
+    dir: 'terraform/environments/dev'
+
+  - id: 'terraform-validate'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['validate']
+    dir: 'terraform/environments/dev'
+    waitFor: ['terraform-init']
+
+  # Destroy specific problematic resources first
+  - id: 'destroy-specific-resources'
+    name: 'hashicorp/terraform:1.11.4'
+    args: [
+      'destroy', 
+      '-auto-approve',
+      '-target=module.networking.google_compute_network.datastream_vpc',
+      '-target=module.orchestration.google_cloud_run_service.dbt_runner',
+      '-target=module.orchestration.google_service_account.cloud_composer_service_account',
+      '-target=module.orchestration.google_artifact_registry_repository.dbt_repo'
+    ]
+    env:
+      - 'TF_VAR_project_id=${_PROJECT_ID}'
+      - 'TF_VAR_region=${_REGION}'
+      - 'TF_VAR_environment=${_ENVIRONMENT}'
+      - 'TF_VAR_subnetwork_address=${_SUBNETWORK_ADDRESS}'
+      - 'TF_VAR_database_name=${_DATABASE_NAME}'
+      - 'TF_VAR_database_user_name=${_DATABASE_USER_NAME}'
+      - 'TF_VAR_db_password_secret_name=${_DB_PASSWORD_SECRET_NAME}'
+      - 'TF_VAR_bigquery_owner_user=${_BIGQUERY_OWNER_USER}'
+      - 'TF_VAR_bigquery_analyst_user=${_BIGQUERY_ANALYST_USER}'
+      - 'TF_VAR_bigquery_contributor_user=${_BIGQUERY_CONTRIBUTOR_USER}'
+      - 'TF_VAR_vpc_network_name=${_VPC_NETWORK_NAME}'
+      - 'TF_VAR_state_file_bucket=${_STATE_FILE_BUCKET}'
+      - 'TF_VAR_secret_version=${_SECRET_VERSION}'
+    dir: 'terraform/environments/dev'
+    waitFor: ['terraform-validate']
+    allowFailure: true
+
+  # Wait a bit for resources to be fully deleted
+  - id: 'wait-for-deletion'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'bash'
+    args: ['-c', 'sleep 30']
+    waitFor: ['destroy-specific-resources']
+
+  # Apply everything fresh
+  - id: 'terraform-apply'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['apply', '-auto-approve']
+    env:
+      - 'TF_VAR_project_id=${_PROJECT_ID}'
+      - 'TF_VAR_region=${_REGION}'
+      - 'TF_VAR_environment=${_ENVIRONMENT}'
+      - 'TF_VAR_subnetwork_address=${_SUBNETWORK_ADDRESS}'
+      - 'TF_VAR_database_name=${_DATABASE_NAME}'
+      - 'TF_VAR_database_user_name=${_DATABASE_USER_NAME}'
+      - 'TF_VAR_db_password_secret_name=${_DB_PASSWORD_SECRET_NAME}'
+      - 'TF_VAR_bigquery_owner_user=${_BIGQUERY_OWNER_USER}'
+      - 'TF_VAR_bigquery_analyst_user=${_BIGQUERY_ANALYST_USER}'
+      - 'TF_VAR_bigquery_contributor_user=${_BIGQUERY_CONTRIBUTOR_USER}'
+      - 'TF_VAR_vpc_network_name=${_VPC_NETWORK_NAME}'
+      - 'TF_VAR_state_file_bucket=${_STATE_FILE_BUCKET}'
+      - 'TF_VAR_secret_version=${_SECRET_VERSION}'
+    dir: 'terraform/environments/dev'
+    waitFor: ['wait-for-deletion']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _PROJECT_ID: 'dbt-project-dvd-rent-464116'
+  _REGION: 'europe-west9'
+  _ENVIRONMENT: 'dev'
+  _SUBNETWORK_ADDRESS: '10.0.0.0/24'
+  _DATABASE_NAME: 'dvd_rental_db'
+  _DATABASE_USER_NAME: 'datastream_user'
+  _DB_PASSWORD_SECRET_NAME: 'your-db-password-secret'
+  _BIGQUERY_OWNER_USER: 'user-owner@example.com'
+  _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
+  _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
+  _VPC_NETWORK_NAME: 'datastream-vpc'
+  _STATE_FILE_BUCKET: 'state-files-dev'
+  _SECRET_VERSION: '1'
