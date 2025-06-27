@@ -12,22 +12,9 @@ steps:
 
   - id: 'terraform-import'
     name: 'hashicorp/terraform:1.11.4' 
-    args: ['import', 'google_storage_bucket.state-files-dev', 'terraform/state']
+    args: ['import', 'google_storage_bucket.state-files-dev', 'state-files-dev']
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-validate'] 
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  
-substitutions:
-  _PROJECT_ID: 'dbt-project-dvd-rent' 
-  _REGION: 'europe-west9' 
-  _ENVIRONMENT: 'dev' 
-  _SUBNETWORK_ADDRESS: '10.0.0.0/24'
-  _DATABASE_NAME: 'dvd_rental_db'
-  _DATABASE_USER_NAME: 'datastream_user'
-  _DB_PASSWORD_SECRET_NAME: 'your-db-password-secret'
-  _BIGQUERY_OWNER_USER: 'user-owner@example.com'
-  _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
-  _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
-  _VPC_NETWORK_NAME: 'datastream-vpc' 
