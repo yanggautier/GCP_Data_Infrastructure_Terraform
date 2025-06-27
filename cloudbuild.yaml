@@ -5,7 +5,6 @@ steps:
     args:
       - '-c'
       - |
-        # Installation de Terraform directement avec la version fixe
         curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
         unzip terraform_1.11.4_linux_amd64.zip
         mv terraform /usr/local/bin/
@@ -41,7 +40,7 @@ steps:
         rm terraform_1.11.4_linux_amd64.zip
         
         terraform plan -out=tfplan
-    env: # Vos TF_VARs restent ici, elles sont des variables d'environnement pour Terraform
+    env:
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
       - 'TF_VAR_environment=${_ENVIRONMENT}'
@@ -68,7 +67,7 @@ steps:
         rm terraform_1.11.4_linux_amd64.zip
         
         terraform apply -auto-approve tfplan
-    env: # Vos TF_VARs restent ici
+    env: 
       - 'TF_VAR_project_id=${_PROJECT_ID}'
       - 'TF_VAR_region=${_REGION}'
       - 'TF_VAR_environment=${_ENVIRONMENT}'
@@ -98,4 +97,5 @@ substitutions:
   _BIGQUERY_OWNER_USER: 'user-owner@example.com'
   _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
   _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
-  _VPC_NETWORK_NAME: 'datastream-vpc' # <--- N'oubliez pas de mettre le vrai nom ici
+  _VPC_NETWORK_NAME: 'datastream-vpc'
+  _PRIVATE_POOL_NAME: 'private-pool'
