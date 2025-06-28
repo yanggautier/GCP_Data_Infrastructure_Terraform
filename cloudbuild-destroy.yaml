@@ -54,8 +54,6 @@ steps:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_MEDIUM'
-  timeout: '3600s'  # 1 hour timeout
 
 substitutions:
   _PROJECT_ID: 'dbt-project-dvd-rent-464116'
