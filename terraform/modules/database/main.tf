@@ -1,11 +1,9 @@
-# Récupère le mot de passe de la base de données depuis Secret Manager
 data "google_secret_manager_secret_version" "db_password_secret" {
   secret  = var.db_password_secret_name
   version = var.secret_version
   project = var.project_id
 }
 
-# Create Cloud SQL PostgreSQL instance
 resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
   project         = var.project_id
   name            = "dvd-rental-${var.environment}-instance"
@@ -23,7 +21,6 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
     availability_type = var.environment == "prod" ? "REGIONAL" : "ZONAL"
     activation_policy = "ALWAYS"
 
-    # Active le décodage logique pour Datastream
     database_flags {
       name  = "cloudsql.logical_decoding"
       value = "on"
@@ -62,27 +59,24 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
   deletion_protection = var.deletion_protection
 }
 
-# Crée une base de données Cloud SQL
 resource "google_sql_database" "dvd_rental_db" {
   name     = var.database_name
   instance = google_sql_database_instance.dvd_rental_sql_postgresql.name
 }
 
-# Crée un utilisateur de base de données avec la configuration appropriée pour Datastream
 resource "google_sql_user" "dvd_rental_user" {
   name     = var.database_user_name
   instance = google_sql_database_instance.dvd_rental_sql_postgresql.name
   password = data.google_secret_manager_secret_version.db_password_secret.secret_data
 }
 
-# Attendre que l'instance Cloud SQL soit prête
 resource "time_sleep" "wait_for_sql_instance" {
   depends_on = [
     google_sql_database_instance.dvd_rental_sql_postgresql,
     google_sql_database.dvd_rental_db,
     google_sql_user.dvd_rental_user
   ]
-  create_duration = "120s" # Attendre 2 minutes pour que l'instance soit entièrement prête
+  create_duration = "600s" 
 }
 
 resource "null_resource" "configure_postgresql_for_datastream" {
