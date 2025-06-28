@@ -70,7 +70,7 @@ steps:
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-validate']
 
-  - id: 'terraform-apply'
+  - id: 'terraform-list'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
