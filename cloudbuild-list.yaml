@@ -1,0 +1,32 @@
+steps:
+  - id: 'terraform-state-list'
+    name: 'gcr.io/cloud-builders/gcloud' 
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update && apt-get install -y \
+          unzip \
+          netcat-traditional \
+          postgresql-client # Si nécessaire pour d'autres commandes Terraform potentielles
+        
+        curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
+        unzip terraform_1.11.4_linux_amd64.zip
+        mv terraform /usr/local/bin/
+        rm terraform_1.11.4_linux_amd64.zip
+
+        terraform init -backend-config="bucket=${_STATE_BUCKET_NAME}" -backend-config="prefix=terraform/state"
+        
+        echo "Executing terraform state list..."
+        terraform state list
+    dir: 'terraform/environments/dev' 
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  workerPool: 'projects/${_PROJECT_ID}/locations/${_REGION}/workerPools/${_PRIVATE_POOL_NAME}'
+
+substitutions:
+  _PROJECT_ID: 'dbt-project-dvd-rent'
+  _REGION: 'europe-west9'
+  _STATE_BUCKET_NAME: 'state-files-dev'
+  _PRIVATE_POOL_NAME: 'your-pool-name' 
