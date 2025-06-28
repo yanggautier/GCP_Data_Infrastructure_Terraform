@@ -39,3 +39,8 @@ output "composer_environment_name" {
   description = "Name of the Cloud Composer environment."
   value       = module.orchestration.composer_environment_name
 }
+
+output "debug_cloud_sql_private_ip" {
+  value = module.database.cloud_sql_private_ip
+  description = "Debug output for Cloud SQL private IP."
+}
