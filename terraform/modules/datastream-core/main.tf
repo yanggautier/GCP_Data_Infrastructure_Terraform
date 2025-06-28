@@ -1,11 +1,9 @@
-# Crée un compte de service pour Datastream
 resource "google_service_account" "datastream_service_account" {
   account_id   = "datastream-service-account"
   display_name = "Datastream Service Account"
   project      = var.project_id
 }
 
-# Attribue les rôles au compte de service Datastream
 resource "google_project_iam_member" "datastream_admin" {
   project = var.project_id
   role    = "roles/datastream.admin"
@@ -39,11 +37,11 @@ resource "google_datastream_private_connection" "private_connection" {
 
   vpc_peering_config {
     vpc    = var.datastream_vpc_id
-    subnet = "10.3.0.0/24" # Ce CIDR doit être unique et ne pas chevaucher le subnet Datastream VPC
+    subnet = "10.200.0.0/24" 
   }
 
   depends_on = [
-    var.private_vpc_connection_id # Dépend de la connexion VPC privée pour Cloud SQL
+    var.private_vpc_connection_id 
   ]
 
   timeouts {
@@ -53,7 +51,6 @@ resource "google_datastream_private_connection" "private_connection" {
   }
 }
 
-# Récupère le mot de passe de la base de données depuis Secret Manager
 data "google_secret_manager_secret_version" "db_password_secret" {
   secret  = var.db_password_secret_name
   project = var.project_id
@@ -88,7 +85,6 @@ resource "google_datastream_connection_profile" "source" {
   ]
 }
 
-# Crée un profil de connexion Datastream pour la destination BigQuery
 resource "google_datastream_connection_profile" "destination" {
   display_name        = "BigQuery Destination Connection Profile"
   project             = var.project_id

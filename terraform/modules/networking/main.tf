@@ -40,7 +40,7 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
     "169.254.0.0/16",     # Google internal networking
     "${google_compute_global_address.private_ip_alloc.address}/${google_compute_global_address.private_ip_alloc.prefix_length}"
   ]
-  priority    = 1000
+  priority    = 500
 }
 
 # Autorise la communication interne au VPC
