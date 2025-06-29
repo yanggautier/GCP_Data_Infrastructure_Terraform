@@ -107,7 +107,7 @@ resource "null_resource" "configure_postgresql_for_datastream" {
       db_user_name      = var.database_user_name
       db_name           = var.database_name
       db_password       = data.google_secret_manager_secret_version.db_password_secret.secret_data
-      # path_module   = "${path.module}"
+      path_module       = path.module
       sql_instance_name = google_sql_database_instance.dvd_rental_sql_postgresql.name
       private_ip_address = google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
     })

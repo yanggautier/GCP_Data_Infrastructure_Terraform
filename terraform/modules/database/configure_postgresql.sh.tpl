@@ -40,7 +40,7 @@ export PGPASSWORD="$DB_PASSWORD"
 DB_CONNECTION_STRING="host=$CLOUD_SQL_PRIVATE_IP port=5432 user=$DB_USER_NAME dbname=$DB_NAME"
 
 echo "Connecting to PostgreSQL and executing publication setup..."
-psql "$DB_CONNECTION_STRING" -f "${path.module}/setup_publication.sql"
+psql "$DB_CONNECTION_STRING" -f "./setup_publication.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: PostgreSQL publication setup failed." >&2
   exit 1
@@ -48,7 +48,7 @@ fi
 echo "PostgreSQL publication setup completed."
 
 echo "Connecting to PostgreSQL and checking/dropping existing replication slot..."
-psql "$DB_CONNECTION_STRING" -f "${path.module}/drop_replication_slot.sql"
+psql "$DB_CONNECTION_STRING" -f "./drop_replication_slot.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: Dropping existing replication slot failed." >&2
   exit 1
@@ -57,7 +57,7 @@ echo "Existing replication slot checked/dropped."
 
 echo "Connecting to PostgreSQL and creating logical replication slot..."
 # This call MUST be separate to ensure a clean transaction context.
-psql "$DB_CONNECTION_STRING" -f "${path.module}/create_replication_slot.sql"
+psql "$DB_CONNECTION_STRING" -f "./create_replication_slot.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: Logical replication slot creation failed." >&2
   exit 1
