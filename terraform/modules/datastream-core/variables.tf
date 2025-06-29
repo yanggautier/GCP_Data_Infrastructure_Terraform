@@ -13,9 +13,19 @@ variable "environment" {
   type        = string
 }
 
+variable "datastream_private_connection_subnet" {
+  description = "Subenet of private connection for peering"
+  type = string
+}
+
 variable "datastream_vpc_id" {
   description = "ID of the Datastream VPC network."
   type        = string
+}
+
+variable "datastream_subnet_id" {
+  description = "Datastream subnet id"
+  type = string
 }
 
 variable "private_vpc_connection_id" {

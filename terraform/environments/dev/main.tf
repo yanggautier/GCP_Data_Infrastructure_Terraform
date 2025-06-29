@@ -80,44 +80,46 @@ module "storage" {
 }
 
 module "database" {
-  source                       = "../../modules/database"
-  project_id                   = var.project_id
-  region                       = var.region
-  environment                  = var.environment
-  database_name                = var.database_name
-  database_user_name           = var.database_user_name
-  datastream_vpc_id            = module.networking.datastream_vpc_id
-  private_vpc_connection_id    = module.networking.private_ip_alloc_name
-  instance_tier                = local.current_env.instance_tier
-  disk_size                    = local.current_env.disk_size
-  backup_enabled               = local.current_env.backup_enabled
-  deletion_protection          = local.current_env.deletion_protection
-  max_replication_slots        = local.current_env.max_replication_slots
-  max_wal_senders              = local.current_env.max_wal_senders
-  db_password_secret_name      = var.db_password_secret_name
-  secret_version               = var.secret_version
-  datastream_vpc_name          = module.networking.datastream_vpc_name
-  datastream_subset_name       = module.networking.datastream_subnet_name
-  private_vpc_connection       = module.networking.private_vpc_connection
+  source                    = "../../modules/database"
+  project_id                = var.project_id
+  region                    = var.region
+  environment               = var.environment
+  database_name             = var.database_name
+  database_user_name        = var.database_user_name
+  datastream_vpc_id         = module.networking.datastream_vpc_id
+  private_vpc_connection_id = module.networking.private_ip_alloc_name
+  instance_tier             = local.current_env.instance_tier
+  disk_size                 = local.current_env.disk_size
+  backup_enabled            = local.current_env.backup_enabled
+  deletion_protection       = local.current_env.deletion_protection
+  max_replication_slots     = local.current_env.max_replication_slots
+  max_wal_senders           = local.current_env.max_wal_senders
+  db_password_secret_name   = var.db_password_secret_name
+  secret_version            = var.secret_version
+  datastream_vpc_name       = module.networking.datastream_vpc_name
+  datastream_subset_name    = module.networking.datastream_subnet_name
+  private_vpc_connection    = module.networking.private_vpc_connection
 
   depends_on = [google_project_service.apis, module.networking]
 }
 
 # Remplacez l'ancien module "datastream" par "datastream_core"
 module "datastream_core" {
-  source                    = "../../modules/datastream-core"
-  project_id                = var.project_id
-  region                    = var.region
-  environment               = var.environment
-  datastream_vpc_id         = module.networking.datastream_vpc_id
-  private_vpc_connection_id = module.networking.private_ip_alloc_name
-  database_name                = var.database_name
-  database_user_name           = var.database_user_name
-  db_password_secret_name      = var.db_password_secret_name
-  bigquery_dataset_id          = module.bigquery.bigquery_dataset_id
-  wait_for_sql_instance_id     = module.database.time_sleep_wait_for_sql_instance_id
-  cloud_sql_private_ip         = module.database.cloud_sql_private_ip
-  depends_on                   = [google_project_service.apis, module.database, module.networking]
+  source                               = "../../modules/datastream-core"
+  project_id                           = var.project_id
+  region                               = var.region
+  environment                          = var.environment
+  datastream_vpc_id                    = module.networking.datastream_vpc_id
+  private_vpc_connection_id            = module.networking.private_ip_alloc_name
+  database_name                        = var.database_name
+  database_user_name                   = var.database_user_name
+  datastream_subnet_id                 = module.networking.datastream_subnet_id
+  db_password_secret_name              = var.db_password_secret_name
+  bigquery_dataset_id                  = module.bigquery.bigquery_dataset_id
+  wait_for_sql_instance_id             = module.database.time_sleep_wait_for_sql_instance_id
+  cloud_sql_private_ip                 = module.database.cloud_sql_private_ip
+  depends_on                           = [google_project_service.apis, module.database, module.networking]
+  datastream_private_connection_subnet = var.datastream_private_connection_subnet
 }
 
 
