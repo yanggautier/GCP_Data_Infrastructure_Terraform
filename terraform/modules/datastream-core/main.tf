@@ -38,7 +38,7 @@ resource "google_datastream_private_connection" "private_connection" {
   vpc_peering_config {
     vpc    = var.datastream_vpc_id
     #subnet = "10.200.0.0/24" 
-    subnet = "10.223.2.0/24"
+    subnet = "10.223.100.0/24"
   }
 
   depends_on = [
