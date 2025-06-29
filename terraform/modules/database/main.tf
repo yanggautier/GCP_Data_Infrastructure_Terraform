@@ -109,7 +109,7 @@ resource "null_resource" "configure_postgresql_for_datastream" {
       db_password       = data.google_secret_manager_secret_version.db_password_secret.secret_data
       sql_script_path   = "${path.module}/setup_replication.sql"
       sql_instance_name = google_sql_database_instance.dvd_rental_sql_postgresql.name
-      private_ip_address =google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
+      private_ip_address = google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
     })
     
     # working_dir is set on the provisioner level, not in the template.
