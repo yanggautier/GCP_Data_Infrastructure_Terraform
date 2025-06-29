@@ -1,0 +1,1 @@
+SELECT pg_drop_replication_slot('datastream_slot') WHERE EXISTS (SELECT 1 FROM pg_replication_slots WHERE slot_name = 'datastream_slot');
