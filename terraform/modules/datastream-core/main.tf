@@ -37,7 +37,7 @@ resource "google_datastream_private_connection" "private_connection" {
 
   vpc_peering_config {
     vpc    = var.datastream_vpc_id
-    subnet = "10.200.0.0/24" 
+    subnet = var.datastream_private_connection_subnet
   }
 
   depends_on = [
@@ -54,6 +54,91 @@ resource "google_datastream_private_connection" "private_connection" {
 data "google_secret_manager_secret_version" "db_password_secret" {
   secret  = var.db_password_secret_name
   project = var.project_id
+}
+
+
+# Create a reverse proxy VM for Cloud SQL access (required for private IP)
+resource "google_compute_instance" "datastream_proxy" {
+  project      = var.project_id
+  name         = "datastream-proxy-${var.environment}"
+  machine_type = "e2-micro"
+  zone         = "${var.region}-a"
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      size  = 10
+    }
+  }
+
+  network_interface {
+    network    = var.datastream_vpc_id
+    subnetwork = var.datastream_subnet_id
+    
+    # No external IP needed
+  }
+
+  service_account {
+    email  = google_service_account.datastream_service_account.email
+    scopes = ["cloud-platform"]
+  }
+
+  tags = ["datastream-proxy"]
+
+  metadata_startup_script = <<-EOF
+    #!/bin/bash
+    apt-get update
+    apt-get install -y postgresql-client
+    
+    # Install socat for port forwarding
+    apt-get install -y socat
+    
+    # Create a service to forward connections to Cloud SQL
+    cat > /etc/systemd/system/datastream-proxy.service << 'EOL'
+[Unit]
+Description=SQL Proxy Service
+After=network.target
+
+[Service]
+Type=simple
+User=postgres
+ExecStart=/usr/bin/socat TCP4-LISTEN:5432,fork,reuseaddr TCP4:${var.cloud_sql_private_ip}:5432
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    # Create postgres user and start service
+    useradd -m postgres || true
+    systemctl enable datastream-proxy.service
+    systemctl start datastream-proxy.service
+  EOF
+
+  depends_on = [
+    google_service_account.datastream_service_account
+  ]
+}
+
+# Firewall rule for SQL proxy
+resource "google_compute_firewall" "allow_datastream_to_proxy" {
+  name    = "allow-datastream-to-proxy"
+  network = var.datastream_vpc_id
+  project = var.project_id
+  
+  allow {
+    protocol = "tcp"
+    ports    = ["5432"]
+  }
+
+  direction = "INGRESS"
+  source_ranges = [
+    var.datastream_private_connection_subnet
+  ]
+
+  target_tags = ["datastream-proxy"]
+  priority    = 1000
 }
 
 

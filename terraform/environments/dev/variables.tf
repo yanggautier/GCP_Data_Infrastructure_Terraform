@@ -61,6 +61,12 @@ variable "subnetwork_address" {
   default     = "10.2.0.0/24"
 }
 
+variable "datastream_private_connection_subnet" {
+  description = "Subnet of private connection for peering"
+  type        = string
+  default     = "10.200.0.0/24"
+}
+
 variable "db_password_secret_name" {
   description = "Secret name form Secret Manager"
   type        = string

@@ -19,11 +19,11 @@ output "bigquery_dataset_id" {
   value       = module.bigquery.bigquery_dataset_id
 }
 
-/*
+
 output "datastream_service_account_email" {
   description = "Email of the Datastream service account."
   value       = module.datastream_core.datastream_service_account_email
-}*/
+}
 
 output "datastream_source_connection_profile_id" {
   description = "ID of the Datastream source connection profile."
@@ -40,7 +40,6 @@ output "composer_environment_name" {
   value       = module.orchestration.composer_environment_name
 }
 
-output "debug_cloud_sql_private_ip" {
-  value = module.database.cloud_sql_private_ip
-  description = "Debug output for Cloud SQL private IP."
+output "datastream_proxy_ip" {
+  value = module.datastream_core.datastream_proxy_ip
 }

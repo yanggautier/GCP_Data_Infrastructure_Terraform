@@ -29,3 +29,7 @@ output "datastream_destination_connection_profile_object" {
   description = "The entire Datastream destination connection profile object."
   value       = google_datastream_connection_profile.destination
 }
+
+output "datastream_proxy_ip" {
+  value = google_compute_instance.datastream_proxy.network_interface[0].network_ip
+}
