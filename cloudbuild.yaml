@@ -71,32 +71,6 @@ steps:
     waitFor: ['terraform-validate']
 
 
-  - id: 'install-postgresql-tools'
-    # Use a standard Debian/Ubuntu based image for package installation.
-    # gcr.io/cloud-builders/gcloud is often used as it's available and Debian-based.
-    name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
-    args:
-    - '-c'
-    - |
-      echo "Installing PostgreSQL client tools and socat..."
-      apt-get update && apt-get install -y postgresql-client socat
-      echo "Installation complete."
-      
-      
-  - id: 'debug-tools-availability' # NEW DEBUG STEP
-    name: 'gcr.io/cloud-builders/gcloud' # Use the same builder as for installation
-    entrypoint: 'bash'
-    args:
-    - '-c'
-    - |
-      echo "Verifying psql and nc presence:"
-      which psql || echo "psql not found!"
-      which nc || echo "nc not found!"
-      psql --version || echo "psql version check failed!"
-      nc -z localhost 22 || echo "nc basic check failed (e.g., to SSH port)!"
-      echo "Tools availability check complete."
-      
   - id: 'terraform-list'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
@@ -106,7 +80,8 @@ steps:
         apt-get update && apt-get install -y \
           unzip \
           netcat-traditional \
-          postgresql-client
+          postgresql-client \
+          socat
         
         curl -LO https://releases.hashicorp.com/terraform/1.11.4/terraform_1.11.4_linux_amd64.zip
         unzip terraform_1.11.4_linux_amd64.zip
