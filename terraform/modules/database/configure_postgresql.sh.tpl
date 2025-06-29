@@ -40,7 +40,7 @@ export PGPASSWORD="$DB_PASSWORD"
 DB_CONNECTION_STRING="host=$CLOUD_SQL_PRIVATE_IP port=5432 user=$DB_USER_NAME dbname=$DB_NAME"
 
 echo "Connecting to PostgreSQL and executing publication setup..."
-psql "$DB_CONNECTION_STRING" -f "${path_module}/setup_publication.sql"
+psql "$DB_CONNECTION_STRING" -f "${path_module}/setup_replication.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: PostgreSQL publication setup failed." >&2
   exit 1
