@@ -108,7 +108,7 @@ options:
 
 substitutions:
   _PROJECT_ID: 'dbt-project-dvd-rent'
-  _REGION: 'europe-west9'
+  _REGION: 'us-central1'
   _ENVIRONMENT: 'dev'
   _SUBNETWORK_ADDRESS: '10.0.0.0/24'
   _DATABASE_NAME: 'dvd_rental_db'
@@ -120,4 +120,3 @@ substitutions:
   _VPC_NETWORK_NAME: 'datastream-vpc'
   _PRIVATE_POOL_NAME: 'private-pool' 
 
-  

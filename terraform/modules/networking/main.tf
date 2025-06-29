@@ -39,7 +39,6 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
     "10.3.0.0/24",        # Private connection subnet for Datastream
     "169.254.0.0/16",     # Google internal networking
     "${google_compute_global_address.private_ip_alloc.address}/${google_compute_global_address.private_ip_alloc.prefix_length}",
-    "10.200.0.0/24"
   ]
   priority    = 500
 }

@@ -57,7 +57,7 @@ options:
 
 substitutions:
   _PROJECT_ID: 'dbt-project-dvd-rent-464116'
-  _REGION: 'europe-west9'
+  _REGION: 'us-central1'
   _ENVIRONMENT: 'dev'
   _SUBNETWORK_ADDRESS: '10.0.0.0/24'
   _DATABASE_NAME: 'dvd_rental_db'

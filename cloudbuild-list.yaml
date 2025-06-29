@@ -27,6 +27,6 @@ options:
 
 substitutions:
   _PROJECT_ID: 'dbt-project-dvd-rent'
-  _REGION: 'europe-west9'
+  _REGION: 'central1'
   _STATE_BUCKET_NAME: 'state-files-dev'
   _PRIVATE_POOL_NAME: 'your-pool-name' 
