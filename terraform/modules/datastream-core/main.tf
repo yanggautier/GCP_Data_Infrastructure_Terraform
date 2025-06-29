@@ -74,35 +74,44 @@ resource "google_compute_instance" "datastream_proxy" {
   network_interface {
     network    = var.datastream_vpc_id
     subnetwork = var.datastream_subnet_id
-    
     # No external IP needed
   }
 
+  # Service account for the VM itself, for logging, etc.
   service_account {
     email  = google_service_account.datastream_service_account.email
-    scopes = ["cloud-platform"]
+    scopes = ["cloud-platform"] # Consider narrower scopes if possible
   }
 
   tags = ["datastream-proxy"]
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
+    set -euo pipefail # Exit on error, unset variables
+    
+    # Update and install necessary packages
     apt-get update
-    apt-get install -y postgresql-client
-    
-    # Install socat for port forwarding
-    apt-get install -y socat
-    
+    apt-get install -y postgresql-client socat
+
+    # Define Cloud SQL IP and port
+    CLOUD_SQL_IP="${var.cloud_sql_private_ip}"
+    CLOUD_SQL_PORT="5432" # IMPORTANT: Make sure this is the correct port for your Cloud SQL instance (e.g., 3306 for MySQL, 5432 for PostgreSQL)
+    PROXY_LISTEN_PORT="5432" # This is the port the proxy VM will listen on for Datastream
+
     # Create a service to forward connections to Cloud SQL
-    cat > /etc/systemd/system/datastream-proxy.service << 'EOL'
+    cat > /etc/systemd/system/datastream-proxy.service << EOL
 [Unit]
-Description=SQL Proxy Service
+Description=SQL Proxy Service for Datastream
 After=network.target
 
 [Service]
 Type=simple
-User=postgres
-ExecStart=/usr/bin/socat TCP4-LISTEN:5432,fork,reuseaddr TCP4:${var.cloud_sql_private_ip}:5432
+# We use root for socat to bind to lower ports if needed, but consider a dedicated user for production.
+# ExecStart=/usr/bin/socat TCP4-LISTEN:${PROXY_LISTEN_PORT},fork,reuseaddr TCP4:${CLOUD_SQL_IP}:${CLOUD_SQL_PORT}
+# For better security, you might bind to 127.0.0.1 if only local processes access,
+# but Datastream needs to reach it from its peered network.
+# So, listen on all interfaces.
+ExecStart=/usr/bin/socat TCP4-LISTEN:${PROXY_LISTEN_PORT},fork,reuseaddr TCP4:${CLOUD_SQL_IP}:${CLOUD_SQL_PORT}
 Restart=always
 RestartSec=5
 
@@ -110,14 +119,14 @@ RestartSec=5
 WantedBy=multi-user.target
 EOL
 
-    # Create postgres user and start service
-    useradd -m postgres || true
+    # Enable and start the service
+    systemctl daemon-reload
     systemctl enable datastream-proxy.service
     systemctl start datastream-proxy.service
   EOF
 
   depends_on = [
-    google_service_account.datastream_service_account
+    google_service_account.datastream_service_account,
   ]
 }
 
@@ -149,7 +158,7 @@ resource "google_datastream_connection_profile" "source" {
   connection_profile_id = "postgresql-source-${var.environment}"
 
   postgresql_profile {
-    hostname = var.cloud_sql_private_ip
+    hostname = google_compute_instance.datastream_proxy.network_interface[0].network_ip
     port     = 5432
     database = var.database_name
     username = var.database_user_name
