@@ -19,9 +19,6 @@ resource "google_datastream_stream" "postgres_to_bigquery_stream" {
       include_objects {
         postgresql_schemas {
           schema = "public"
-          postgresql_tables {
-            table = "actor"
-          }
         }
       }
     }
