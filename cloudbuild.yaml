@@ -70,6 +70,19 @@ steps:
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-validate']
 
+
+  - id: 'install-postgresql-tools'
+    # Use a standard Debian/Ubuntu based image for package installation.
+    # gcr.io/cloud-builders/gcloud is often used as it's available and Debian-based.
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+    - '-c'
+    - |
+      echo "Installing PostgreSQL client tools and socat..."
+      apt-get update && apt-get install -y postgresql-client socat
+      echo "Installation complete."
+      
   - id: 'terraform-list'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
