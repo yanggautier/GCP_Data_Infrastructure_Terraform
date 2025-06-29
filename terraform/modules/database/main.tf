@@ -35,12 +35,7 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
       name  = "max_wal_senders"
       value = tostring(var.max_wal_senders)
     }
-
-    database_flags {
-      name  = "wal_level"
-      value = "logical"
-    }
-
+    
     ip_configuration {
       ipv4_enabled                        = false
       private_network                     = var.datastream_vpc_id
