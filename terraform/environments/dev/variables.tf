@@ -16,7 +16,7 @@ variable "region" {
 variable "state_file_bucket" {
   description = "Bucker for state files"
   type        = string
-  default     = "state-files-dev"
+  default     = "state-file-dev-buckets"
 }
 
 variable "environment" {

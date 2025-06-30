@@ -8,7 +8,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "state-files-dev"
+    bucket = var.state_file_bucket
     prefix = "terraform/state"
   }
 }
