@@ -98,19 +98,21 @@ resource "null_resource" "configure_postgresql_for_datastream" {
   ]
 
   provisioner "local-exec" {
+    # Use templatefile to render the script, passing all necessary variables.
+    # Terraform evaluates this *before* passing the final string to the shell.
     command = <<EOT
-      OUTPUT_FILE="${path.module}/configure_postgresql_output.log"
-      # Exécute le script et redirige stdout et stderr vers le fichier
-      ${templatefile("${path.module}/configure_postgresql.sh.tpl", {
-        project_id         = var.project_id
-        region             = var.region
-        sql_instance_name  = google_sql_database_instance.dvd_rental_sql_postgresql.name
-        db_user_name       = var.database_user_name
-        db_name            = var.database_name
-        db_password        = data.google_secret_manager_secret_version.db_password_secret.secret_data
-        path_module        = path.module
-        private_ip_address = google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
-      })} > "$OUTPUT_FILE" 2>&1
+     OUTPUT_FILE="${path.module}/configure_postgresql_output.log"
+     ${templatefile("${path.module}/configure_postgresql.sh.tpl", {
+      project_id        = var.project_id
+      region            = var.region
+      sql_instance_name = google_sql_database_instance.dvd_rental_sql_postgresql.name
+      db_user_name      = var.database_user_name
+      db_name           = var.database_name
+      db_password       = data.google_secret_manager_secret_version.db_password_secret.secret_data
+      path_module       = path.module
+      sql_instance_name = google_sql_database_instance.dvd_rental_sql_postgresql.name
+      private_ip_address = google_sql_database_instance.dvd_rental_sql_postgresql.private_ip_address
+    })} > "$OUTPUT_FILE" 2>&1
 
       # Affiche le contenu du fichier pour que Cloud Build le capture
       echo "--- configure_postgresql.sh.tpl output ---"
