@@ -13,11 +13,6 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "state_file_bucket" {
-  description = "Bucker for state files"
-  type        = string
-  default     = "state-file-dev-buckets"
-}
 
 variable "environment" {
   description = "Environment for the resources (e.g., dev, staging, prod)"

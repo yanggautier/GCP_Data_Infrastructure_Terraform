@@ -8,7 +8,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = var.state_file_bucket
+    bucket = "state-file-dev-buckets"  # it must be a static bucket not a dynamic bucket name
     prefix = "terraform/state"
   }
 }
