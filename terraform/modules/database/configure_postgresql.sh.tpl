@@ -34,10 +34,15 @@ for i in $(seq 1 $timeout); do
 done
 echo "PostgreSQL instance is reachable on $CLOUD_SQL_PRIVATE_IP:5432."
 
+# PostgreSQL Configuration
+export PGPASSWORD="$DB_PASSWORD"
+DB_CONNECTION_STRING="host=$CLOUD_SQL_PRIVATE_IP port=5432 user=$DB_USER_NAME dbname=$DB_NAME"
+
+
 
 echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via proxy..."
 # Aucune exportation de PGPASSWORD n'est nécessaire pour l'utilisateur 'postgres' via le proxy avec l'authentification IAM
-psql "host=127.0.0.1 port=$PROXY_PORT user=postgres dbname=postgres" -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
+psql $DB_CONNECTION_STRING -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
 if [ $? -ne 0 ]; then
   echo "ERROR: Failed to grant REPLICATION role to $DB_USER_NAME." >&2
   kill $PROXY_PID || true # Tuer le proxy en cas d'erreur
@@ -51,9 +56,6 @@ kill $PROXY_PID
 wait $PROXY_PID || true # Attendre la terminaison du proxy, ignorer les erreurs si déjà mort
 echo "Cloud SQL Proxy stopped."
 
-# PostgreSQL Configuration
-export PGPASSWORD="$DB_PASSWORD"
-DB_CONNECTION_STRING="host=$CLOUD_SQL_PRIVATE_IP port=5432 user=$DB_USER_NAME dbname=$DB_NAME"
 
 echo "Connecting to PostgreSQL and executing publication setup..."
 psql "$DB_CONNECTION_STRING" -f "${path_module}/setup_replication.sql"
