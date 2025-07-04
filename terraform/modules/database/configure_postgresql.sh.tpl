@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Variables
 PROJECT_ID="${project_id}"
@@ -9,7 +8,7 @@ DB_USER_NAME="${db_user_name}"
 DB_NAME="${db_name}"
 DB_PASSWORD="${db_password}"
 CLOUD_SQL_PRIVATE_IP="${private_ip_address}"
-PATH_MODULE="${path_module}"
+PATH_MODULE="${PATH_MODULE}"
 
 # Get the private IP address of the Cloud SQL instance
 echo "Retrieving private IP for Cloud SQL instance: $SQL_INSTANCE_NAME..."
