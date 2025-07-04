@@ -37,7 +37,7 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
     }
     
     ip_configuration {
-      ipv4_enabled                        = false
+      ipv4_enabled                        = true
       private_network                     = var.datastream_vpc_id
       enable_private_path_for_google_cloud_services = true
     }
