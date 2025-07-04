@@ -44,8 +44,6 @@ gcloud sql connect "$SQL_INSTANCE_NAME" \
   --database=postgres \
   --quiet \
   --project="$PROJECT_ID" \
-  --no-browser \
-  --force-tcp \
   -- \
   -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
 if [ $? -ne 0 ]; then
