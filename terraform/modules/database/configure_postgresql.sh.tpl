@@ -44,8 +44,7 @@ gcloud sql connect "$SQL_INSTANCE_NAME" \
   --database=postgres \
   --quiet \
   --project="$PROJECT_ID" \
-  -- \
-  -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
+  "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
 if [ $? -ne 0 ]; then
   echo "ERROR: Failed to grant REPLICATION role to $DB_USER_NAME using gcloud sql connect." >&2
   exit 1
