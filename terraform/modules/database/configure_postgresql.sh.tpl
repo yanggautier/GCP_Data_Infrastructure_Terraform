@@ -51,7 +51,6 @@ if [ $? -ne 0 ]; then
 fi
 echo "REPLICATION role granted to $DB_USER_NAME."
 
-
 # PostgreSQL Configuration
 export PGPASSWORD="$DB_PASSWORD"
 DB_CONNECTION_STRING="host=$CLOUD_SQL_PRIVATE_IP port=5432 user=$DB_USER_NAME dbname=$DB_NAME"
