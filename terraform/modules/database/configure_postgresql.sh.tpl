@@ -7,61 +7,75 @@ SQL_INSTANCE_NAME="${sql_instance_name}"
 DB_USER_NAME="${db_user_name}"
 DB_NAME="${db_name}"
 DB_PASSWORD="${db_password}"
-CLOUD_SQL_PRIVATE_IP="${private_ip_address}"
+CLOUD_SQL_PRIVATE_IP="${private_ip_address}" # Not directly used for proxy, but kept for consistency
 PATH_MODULE="${PATH_MODULE}"
 
-# Get the private IP address of the Cloud SQL instance
-echo "Retrieving private IP for Cloud SQL instance: $SQL_INSTANCE_NAME..."
-if [ -z "$CLOUD_SQL_PRIVATE_IP" ]; then
-  echo "Error: Could not retrieve private IP for instance $SQL_INSTANCE_NAME."
-  exit 1
+# --- Cloud SQL Auth Proxy Configuration ---
+PROXY_PORT=5432 # Default PostgreSQL port, proxy will listen on localhost:5432
+PROXY_BINARY="cloud_sql_proxy"
+PROXY_URL="https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64" # For Linux AMD64 workers
+
+# Ensure the proxy binary is available
+if [ ! -f "$PROXY_BINARY" ]; then
+  echo "Downloading Cloud SQL Auth Proxy..."
+  wget "$PROXY_URL" -O "$PROXY_BINARY"
+  chmod +x "$PROXY_BINARY"
+  if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to download Cloud SQL Auth Proxy." >&2
+    exit 1
+  fi
 fi
 
-echo "Cloud SQL instance private IP: $CLOUD_SQL_PRIVATE_IP"
+# Start the Cloud SQL Auth Proxy in the background
+# The proxy will connect to the instance using its instance connection name
+# and listen on localhost:5432.
+# Using --private-ip to force connection via private IP if instance has both.
+echo "Starting Cloud SQL Auth Proxy for instance $PROJECT_ID:$REGION:$SQL_INSTANCE_NAME..."
+./"$PROXY_BINARY" -instances="$PROJECT_ID:$REGION:$SQL_INSTANCE_NAME"=tcp:127.0.0.1:"$PROXY_PORT" -enable_iam_login -ip_address_types=PRIVATE &
+PROXY_PID=$! # Get the process ID of the proxy
 
-# Wait for the database instance to be reachable on its private IP
-# Cloud Build ayant une connectivité directe, cette attente est plus fiable.
-echo "Waiting for PostgreSQL instance to be reachable on $CLOUD_SQL_PRIVATE_IP:5432..."
-timeout=180 # Increased timeout for network readiness
+# Wait for the proxy to be ready
+echo "Waiting for Cloud SQL Auth Proxy to start on localhost:$PROXY_PORT..."
+timeout=60 # Wait up to 60 seconds for the proxy
 for i in $(seq 1 $timeout); do
-  nc -z -w 1 "$CLOUD_SQL_PRIVATE_IP" 5432 && break
-  echo "Port 5432 not open yet on $CLOUD_SQL_PRIVATE_IP, retrying in 1 second..."
+  nc -z -w 1 127.0.0.1 "$PROXY_PORT" && break
+  echo "Proxy port $PROXY_PORT not open yet, retrying in 1 second..."
   sleep 1
   if [ "$i" -eq "$timeout" ]; then
-    echo "Timeout waiting for Cloud SQL instance to be reachable. Aborting."
+    echo "Timeout waiting for Cloud SQL Auth Proxy to be ready. Aborting."
+    kill "$PROXY_PID" # Kill the proxy process
     exit 1
   fi
 done
-echo "PostgreSQL instance is reachable on $CLOUD_SQL_PRIVATE_IP:5432."
+echo "Cloud SQL Auth Proxy is ready."
 
-# Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect.
-# This command handles authentication (including IAM) and proxying internally,
-# making it suitable for Cloud Build environments. The Cloud Build service account
-# must have appropriate IAM roles (e.g., roles/cloudsql.client) to connect.
-echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect..."
+# --- PostgreSQL Configuration ---
+export PGPASSWORD="$DB_PASSWORD" # Ensure password is set for DB_USER_NAME
 
-echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect..."
-echo "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;" | gcloud sql connect "$SQL_INSTANCE_NAME" \
-  --user=postgres \
-  --database=postgres \
-  --quiet \
-  --project="$PROJECT_ID" 
-psql "host=$CLOUD_SQL_PRIVATE_IP port=5432 user=postgres dbname=postgres" -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
+# Granting REPLICATION role to $DB_USER_NAME using postgres user directly with psql,
+# connecting via the local Cloud SQL Auth Proxy.
+# We connect as 'postgres' user to the 'postgres' database to perform this administrative task.
+echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via Cloud SQL Auth Proxy..."
+psql "host=127.0.0.1 port=$PROXY_PORT user=postgres dbname=postgres" -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
 if [ $? -ne 0 ]; then
-  echo "ERROR: Failed to grant REPLICATION role to $DB_USER_NAME using gcloud sql connect." >&2
+  echo "ERROR: Failed to grant REPLICATION role to $DB_USER_NAME." >&2
+  kill "$PROXY_PID" # Kill the proxy process on failure
   exit 1
 fi
 echo "REPLICATION role granted to $DB_USER_NAME."
 
-# PostgreSQL Configuration
-export PGPASSWORD="$DB_PASSWORD"
-DB_CONNECTION_STRING="host=$CLOUD_SQL_PRIVATE_IP port=5432 user=$DB_USER_NAME dbname=$DB_NAME"
+# Now define the DB_CONNECTION_STRING for subsequent calls using DB_USER_NAME and DB_NAME
+# These connections will also go through the proxy, as it's listening on the default port.
+# If you want them to use the private IP directly (not via proxy), you'd need to change this.
+# For simplicity and consistency, let's keep them going through the proxy.
+DB_CONNECTION_STRING="host=127.0.0.1 port=$PROXY_PORT user=$DB_USER_NAME dbname=$DB_NAME"
 
 
 echo "Connecting to PostgreSQL and executing publication setup..."
 psql "$DB_CONNECTION_STRING" -f "${PATH_MODULE}/setup_replication.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: PostgreSQL publication setup failed." >&2
+  kill "$PROXY_PID" # Kill the proxy process on failure
   exit 1
 fi
 echo "PostgreSQL publication setup completed."
@@ -70,6 +84,7 @@ echo "Connecting to PostgreSQL and checking/dropping existing replication slot..
 psql "$DB_CONNECTION_STRING" -f "${PATH_MODULE}/drop_replication_slot.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: Dropping existing replication slot failed." >&2
+  kill "$PROXY_PID" # Kill the proxy process on failure
   exit 1
 fi
 echo "Existing replication slot checked/dropped."
@@ -80,10 +95,18 @@ echo "Connecting to PostgreSQL and creating logical replication slot..."
 psql "$DB_CONNECTION_STRING" -f "${PATH_MODULE}/create_replication_slot.sql"
 if [ $? -ne 0 ]; then
   echo "ERROR: Logical replication slot creation failed." >&2
+  kill "$PROXY_PID" # Kill the proxy process on failure
   exit 1
 fi
 echo "Logical replication slot created successfully."
 
 
 echo "PostgreSQL setup completed successfully."
+
+# Always kill the proxy process at the end
+echo "Stopping Cloud SQL Auth Proxy..."
+kill "$PROXY_PID"
+if [ $? -ne 0 ]; then
+  echo "WARNING: Failed to kill Cloud SQL Auth Proxy process $PROXY_PID." >&2
+fi
 echo "No cleanup needed."
