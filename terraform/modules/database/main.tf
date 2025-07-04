@@ -35,6 +35,11 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
       name  = "max_wal_senders"
       value = tostring(var.max_wal_senders)
     }
+
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
     
     ip_configuration {
       ipv4_enabled                        = true
