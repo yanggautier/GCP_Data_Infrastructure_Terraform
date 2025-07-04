@@ -40,8 +40,9 @@ fi
 # The proxy will connect to the instance using its instance connection name
 # and listen on localhost:5432.
 # Using --private-ip to force connection via private IP if instance has both.
+# Removed -enable_iam_login as it's primarily for IAM-enabled DB users, not the default 'postgres' superuser.
 echo "Starting Cloud SQL Auth Proxy for instance $PROJECT_ID:$REGION:$SQL_INSTANCE_NAME..."
-./"$PROXY_BINARY" -instances="$PROJECT_ID:$REGION:$SQL_INSTANCE_NAME"=tcp:127.0.0.1:"$PROXY_PORT" -enable_iam_login -ip_address_types=PRIVATE &
+./"$PROXY_BINARY" -instances="$PROJECT_ID:$REGION:$SQL_INSTANCE_NAME"=tcp:127.0.0.1:"$PROXY_PORT" -ip_address_types=PRIVATE &
 PROXY_PID=$! # Get the process ID of the proxy
 
 # Wait for the proxy to be ready
