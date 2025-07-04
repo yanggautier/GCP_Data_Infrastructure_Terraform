@@ -41,7 +41,15 @@ echo "PostgreSQL instance is reachable on $CLOUD_SQL_PRIVATE_IP:5432."
 echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect..."
 
 echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect..."
-psql "host=$CLOUD_SQL_PRIVATE_IP port=5432 user=postgres dbname=postgres" -c "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
+gcloud sql connect "$SQL_INSTANCE_NAME" \
+  --user=postgres \
+  --database=postgres \
+  --quiet \
+  --project="$PROJECT_ID" \
+  --no-browser \
+  --force-tcp \
+  --command="ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
+  
 if [ $? -ne 0 ]; then
   echo "ERROR: Failed to grant REPLICATION role to $DB_USER_NAME using gcloud sql connect." >&2
   exit 1
