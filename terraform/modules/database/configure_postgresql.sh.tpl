@@ -7,7 +7,8 @@ SQL_INSTANCE_NAME="${sql_instance_name}"
 DB_USER_NAME="${db_user_name}"
 DB_NAME="${db_name}"
 DB_PASSWORD="${db_password}"
-CLOUD_SQL_PRIVATE_IP="${private_ip_address}" # Not directly used for proxy, but kept for consistency
+POSTGRES_PASSWORD="${postgres_password}"
+CLOUD_SQL_PRIVATE_IP="${private_ip_address}" 
 PATH_MODULE="${PATH_MODULE}"
 
 # --- Cloud SQL Auth Proxy Configuration ---
@@ -61,7 +62,8 @@ done
 echo "Cloud SQL Auth Proxy is ready."
 
 # --- PostgreSQL Configuration ---
-export PGPASSWORD="$DB_PASSWORD" # Ensure password is set for DB_USER_NAME
+# Export PGPASSWORD for the 'postgres' user for the ALTER USER command
+export PGPASSWORD="$POSTGRES_PASSWORD"
 
 # Granting REPLICATION role to $DB_USER_NAME using postgres user directly with psql,
 # connecting via the local Cloud SQL Auth Proxy.
@@ -75,10 +77,8 @@ if [ $? -ne 0 ]; then
 fi
 echo "REPLICATION role granted to $DB_USER_NAME."
 
-# Now define the DB_CONNECTION_STRING for subsequent calls using DB_USER_NAME and DB_NAME
-# These connections will also go through the proxy, as it's listening on the default port.
-# If you want them to use the private IP directly (not via proxy), you'd need to change this.
-# For simplicity and consistency, let's keep them going through the proxy.
+# Now set PGPASSWORD for the 'dvd_rental_user' for subsequent calls
+export PGPASSWORD="$DB_PASSWORD"
 DB_CONNECTION_STRING="host=127.0.0.1 port=$PROXY_PORT user=$DB_USER_NAME dbname=$DB_NAME"
 
 

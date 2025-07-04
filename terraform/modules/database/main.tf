@@ -75,6 +75,20 @@ resource "google_sql_user" "dvd_rental_user" {
   password = data.google_secret_manager_secret_version.db_password_secret.secret_data
 }
 
+resource "random_string" "postgres_password_gen" {
+  length  = 16
+  special = true
+  override_special = "!@#$%^&*"
+}
+
+resource "google_sql_user" "postgres_user" {
+  name     = "postgres"
+  instance = google_sql_database_instance.dvd_rental_sql_postgresql.name
+  password = random_string.postgres_password_gen.result
+  host     = "%" # Allow connections from any host (within VPC context)
+  depends_on = [google_sql_database_instance.dvd_rental_sql_postgresql]
+}
+
 resource "time_sleep" "wait_for_sql_instance" {
   depends_on = [
     google_sql_database_instance.dvd_rental_sql_postgresql,
