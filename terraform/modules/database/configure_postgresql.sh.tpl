@@ -39,12 +39,15 @@ echo "PostgreSQL instance is reachable on $CLOUD_SQL_PRIVATE_IP:5432."
 # making it suitable for Cloud Build environments. The Cloud Build service account
 # must have appropriate IAM roles (e.g., roles/cloudsql.client) to connect.
 echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect..."
-gcloud sql connect "$SQL_INSTANCE_NAME" \
+
+echo "Granting REPLICATION role to $DB_USER_NAME using postgres user via gcloud sql connect..."
+echo "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;" | gcloud sql connect "$SQL_INSTANCE_NAME" \
   --user=postgres \
   --database=postgres \
   --quiet \
   --project="$PROJECT_ID" \
-  "ALTER USER \"$DB_USER_NAME\" WITH REPLICATION;"
+  -- \
+  psql
 if [ $? -ne 0 ]; then
   echo "ERROR: Failed to grant REPLICATION role to $DB_USER_NAME using gcloud sql connect." >&2
   exit 1
