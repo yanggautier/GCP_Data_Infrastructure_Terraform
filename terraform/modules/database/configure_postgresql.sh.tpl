@@ -18,10 +18,20 @@ PROXY_URL="https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64" # For Lin
 # Ensure the proxy binary is available
 if [ ! -f "$PROXY_BINARY" ]; then
   echo "Downloading Cloud SQL Auth Proxy..."
-  wget "$PROXY_URL" -O "$PROXY_BINARY"
+  # Try to download with curl first, as it's often available in Cloud Build environments
+  if command -v curl >/dev/null 2>&1; then
+    curl -o "$PROXY_BINARY" "$PROXY_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    # Fallback to wget if curl is not found
+    wget "$PROXY_URL" -O "$PROXY_BINARY"
+  else
+    echo "ERROR: Neither curl nor wget found. Please ensure one is installed in your Cloud Build environment." >&2
+    exit 1
+  fi
+
   chmod +x "$PROXY_BINARY"
   if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to download Cloud SQL Auth Proxy." >&2
+    echo "ERROR: Failed to make Cloud SQL Auth Proxy executable." >&2
     exit 1
   fi
 fi
