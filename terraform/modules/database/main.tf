@@ -81,14 +81,6 @@ resource "random_string" "postgres_password_gen" {
   override_special = "!@#$%^&*"
 }
 
-resource "google_sql_user" "postgres_user" {
-  name     = "postgres"
-  instance = google_sql_database_instance.dvd_rental_sql_postgresql.name
-  password = random_string.postgres_password_gen.result
-  host     = "%" # Allow connections from any host (within VPC context)
-  depends_on = [google_sql_database_instance.dvd_rental_sql_postgresql]
-}
-
 resource "time_sleep" "wait_for_sql_instance" {
   depends_on = [
     google_sql_database_instance.dvd_rental_sql_postgresql,

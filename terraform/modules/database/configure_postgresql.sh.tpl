@@ -7,8 +7,8 @@ SQL_INSTANCE_NAME="${sql_instance_name}"
 DB_USER_NAME="${db_user_name}"
 DB_NAME="${db_name}"
 DB_PASSWORD="${db_password}"
-POSTGRES_PASSWORD="${postgres_password}"
-CLOUD_SQL_PRIVATE_IP="${private_ip_address}" 
+POSTGRES_PASSWORD="${postgres_password}" # Variable for postgres user password
+CLOUD_SQL_PRIVATE_IP="${private_ip_address}" # Not directly used for proxy, but kept for consistency
 PATH_MODULE="${PATH_MODULE}"
 
 # --- Cloud SQL Auth Proxy Configuration ---
@@ -36,6 +36,21 @@ if [ ! -f "$PROXY_BINARY" ]; then
     exit 1
   fi
 fi
+
+# --- Set password for 'postgres' user ---
+# This is a critical step to ensure the 'postgres' user has a password that can be used.
+# The Cloud Build service account needs Cloud SQL Admin role for this.
+echo "Setting password for 'postgres' user using gcloud sql users set-password..."
+gcloud sql users set-password postgres --host=% \
+  --instance="$SQL_INSTANCE_NAME" \
+  --password="$POSTGRES_PASSWORD" \
+  --project="$PROJECT_ID"
+if [ $? -ne 0 ]; then
+  echo "ERROR: Failed to set password for 'postgres' user." >&2
+  exit 1
+fi
+echo "Password for 'postgres' user set successfully."
+
 
 # Start the Cloud SQL Auth Proxy in the background
 # The proxy will connect to the instance using its instance connection name
