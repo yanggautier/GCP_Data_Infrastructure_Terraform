@@ -16,7 +16,7 @@ steps:
     name: 'hashicorp/terraform:1.11.4'
     args: ['state', 'rm', '${_RESOURCE_TARGET}']
     dir: 'terraform/environments/dev'
-    waitFor: ['terraform-plan-destroy']
+    waitFor: ['terraform-validate']
 
 options:
   logging: CLOUD_LOGGING_ONLY
