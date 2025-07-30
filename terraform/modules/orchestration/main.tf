@@ -39,19 +39,17 @@ resource "google_composer_environment" "dbt_orchestration" {
   name     = "composer-dbt-${var.environment}"
   region   = var.region
   project  = var.project_id
-
+  
   depends_on = [
     google_project_iam_member.composer_sa_user,
     google_project_iam_member.composer_worker_role
   ]
-
   config {
     software_config {
       image_version = var.cloud_composer_version
     }
 
     environment_size = var.cloud_composer_size
-
     workloads_config {
       scheduler {
         cpu        = var.cloud_composer_scheduler_cpu
