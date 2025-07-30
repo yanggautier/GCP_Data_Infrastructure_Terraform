@@ -1,37 +1,4 @@
-# Cluster GKE
-resource "google_container_cluster" "dbt_cluster" {
-  name     = "dbt-cluster-${var.environment}"
-  location = var.region
-  project  = var.project_id
-  network    = var.vpc_id
-  subnetwork = var.gke_subnet_id
 
-  # Configuration for Autopilot mode
-  enable_autopilot = true
-  
-  # Or Standard mode with custom node pool
-  # initial_node_count       = 1
-  # remove_default_node_pool = true
-
-  # Enable private cluster
-  private_cluster_config {
-    enable_private_nodes = true
-    enable_private_endpoint = false
-    master_ipv4_cidr_block = var.gke_master_ipv4_cidr_block
-  }
-  # Enable IP aliasing for GKE
-  ip_allocation_policy {
-    cluster_secondary_range_name  = "pods"
-    services_secondary_range_name = "services"
-  }
-}
-
-provider "kubernetes" {
-  host                   = google_container_cluster.dbt_cluster.endpoint
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate)
-  
-}
 
 # Service account pour Cloud Composer
 resource "google_service_account" "cloud_composer_service_account" {

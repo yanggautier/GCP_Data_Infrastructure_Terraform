@@ -1,9 +1,9 @@
+# GCP Data pipeline with DBT
 
+## Description
+Manage and configuration data infrastructure by using Terraform, this infrastructure includes GCS for Datalake, BigQuery for DataWarehouse, GKE for deploy DBT instance in Kubernetes Clusters.
 
-
-
-## Settings
-
+## Installation
 1. Create a Google Cloud project
 ```bash
  gcloud projects create PROJECT_ID 
@@ -29,8 +29,6 @@ gcloud auth application-default login
 You must set your postgresql password in `Secret Manager` to use in cloud SQL PostgreSQL db
 
 ## Run Terraform
-
-
 
 Initiate Terraform
 ```bash
@@ -87,11 +85,4 @@ terraform state show resouce_type.resource_name
 
 ## Create a private pool in cloudbuild
 
-private-pool	us-central1	e2-medium	100 GB	datastream-vpc
-
-## Add publication in bd PostgreSQL after deploiement
-
-```sql
-CREATE PUBLICATION dvd_rental_publication FOR ALL TABLES;
-SELECT pg_create_logical_replication_slot('dvd_rental_slot', 'pgoutput');
-```
+Create a private-pool with get address in private-ip-alloc-cb which is a address allocate in vpc 

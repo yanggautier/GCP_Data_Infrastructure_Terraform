@@ -22,10 +22,6 @@ variable "gke_subnet_id" {
   description = "ID of the subnetwork for the GKE cluster."
   type        = string  
 }
-variable "gke_master_ipv4_cidr_block" {
-  description = "CIDR block for the GKE master IP."
-  type        = string
-}
 
 variable "cloud_composer_version" {
   description = "Version of Cloud Composer to use."

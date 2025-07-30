@@ -88,7 +88,6 @@ module "database" {
   depends_on                = [google_project_service.apis, module.networking]
 }
 
-# Remplacez l'ancien module "datastream" par "datastream_core"
 module "datastream_core" {
   source                               = "../../modules/datastream-core"
   project_id                           = var.project_id
@@ -120,6 +119,40 @@ module "bigquery" {
   depends_on = [google_project_service.apis]
 }
 
+# Cluster GKE
+resource "google_container_cluster" "dbt_cluster" {
+  name     = "dbt-cluster-${var.environment}"
+  location = var.region
+  project  = var.project_id
+  network    = module.networking.vpc_id
+  subnetwork = module.networking.gke_subnet_id
+  # Configuration for Autopilot mode
+  enable_autopilot = true
+  # Or Standard mode with custom node pool
+  # initial_node_count       = 1
+  # remove_default_node_pool = true
+
+  # Enable private cluster
+  private_cluster_config {
+    enable_private_nodes = true
+    enable_private_endpoint = false
+    master_ipv4_cidr_block = var.gke_master_ipv4_cidr_block
+  }
+  # Enable IP aliasing for GKE
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
+  }
+  depends_on = [module.networking]
+}
+
+provider "kubernetes" {
+  host                   = google_container_cluster.dbt_cluster.endpoint
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate)
+  # Explicitly depend on the GKE cluster to ensure it's ready before configuring the Kubernetes provider
+}
+
 module "orchestration" {
   source                              = "../../modules/orchestration"
   project_id                          = var.project_id
@@ -137,8 +170,7 @@ module "orchestration" {
   cloud_composer_worker_cpu           = var.cloud_composer_worker_cpu
   cloud_composer_worker_memory_gb     = var.cloud_composer_worker_memory_gb
   cloud_composer_worker_storage_gb    = var.cloud_composer_worker_storage_gb
-  gke_master_ipv4_cidr_block          = var.gke_master_ipv4_cidr_block
-  depends_on                          = [google_project_service.apis]
+  depends_on                          = [google_project_service.apis, module.networking, provider.kubernetes]
 }
 
 module "datastream_stream" {
