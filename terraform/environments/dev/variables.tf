@@ -102,7 +102,7 @@ variable "gke_master_ipv4_cidr_block" {
 variable "cloud_composer_size" {
   description = "Size of the Cloud Composer environment."
   type        = string
-  default     = "composer-size-small"
+  default     = "ENVIRONMENT_SIZE_SMALL"
 }
 
 variable "cloud_composer_scheduler_cpu" {
