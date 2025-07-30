@@ -19,10 +19,14 @@ provider "google" {
 }
 
 # Include all shared local variables
+# Remplacer votre bloc locals actuel par :
 locals {
-  source = "../../shared"
-}
+  # Charger la configuration depuis le fichier YAML
+  shared_config = yamldecode(file("${path.module}/../../shared/locals.yaml"))
 
+  # Sélectionner la configuration de l'environnement actuel
+  current_env = local.shared_config.env_config[var.environment]
+}
 
 # Enable APIs
 resource "google_project_service" "apis" {
@@ -85,7 +89,11 @@ module "database" {
   vpc_name                  = module.networking.vpc_name
   datastream_subset_name    = module.networking.datastream_subnet_name
   private_vpc_connection    = module.networking.private_vpc_connection
-  depends_on                = [google_project_service.apis, module.networking]
+
+  depends_on = [
+    google_project_service.apis,
+    module.networking
+  ]
 }
 
 module "datastream_core" {
@@ -102,8 +110,14 @@ module "datastream_core" {
   bigquery_dataset_id                  = module.bigquery.bigquery_dataset_id
   wait_for_sql_instance_id             = module.database.time_sleep_wait_for_sql_instance_id
   cloud_sql_private_ip                 = module.database.cloud_sql_private_ip
-  depends_on                           = [google_project_service.apis, module.database, module.networking]
   datastream_private_connection_subnet = var.datastream_private_connection_subnet
+
+  depends_on = [
+    google_project_service.apis,
+    module.database,
+    module.networking
+  ]
+
 }
 
 module "bigquery" {
@@ -121,9 +135,9 @@ module "bigquery" {
 
 # Cluster GKE
 resource "google_container_cluster" "dbt_cluster" {
-  name     = "dbt-cluster-${var.environment}"
-  location = var.region
-  project  = var.project_id
+  name       = "dbt-cluster-${var.environment}"
+  location   = var.region
+  project    = var.project_id
   network    = module.networking.vpc_id
   subnetwork = module.networking.gke_subnet_id
   # Configuration for Autopilot mode
@@ -134,9 +148,9 @@ resource "google_container_cluster" "dbt_cluster" {
 
   # Enable private cluster
   private_cluster_config {
-    enable_private_nodes = true
+    enable_private_nodes    = true
     enable_private_endpoint = false
-    master_ipv4_cidr_block = var.gke_master_ipv4_cidr_block
+    master_ipv4_cidr_block  = var.gke_master_ipv4_cidr_block
   }
   # Enable IP aliasing for GKE
   ip_allocation_policy {
@@ -170,7 +184,12 @@ module "orchestration" {
   cloud_composer_worker_cpu           = var.cloud_composer_worker_cpu
   cloud_composer_worker_memory_gb     = var.cloud_composer_worker_memory_gb
   cloud_composer_worker_storage_gb    = var.cloud_composer_worker_storage_gb
-  depends_on                          = [google_project_service.apis, module.networking, provider.kubernetes]
+
+  depends_on = [
+    google_project_service.apis,
+    module.networking,
+    google_container_cluster.dbt_cluster
+  ]
 }
 
 module "datastream_stream" {
