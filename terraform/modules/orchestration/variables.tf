@@ -32,7 +32,7 @@ variable "cloud_composer_version" {
 variable "cloud_composer_size" {
   description = "Size of the Cloud Composer environment."
   type        = string
-  default     = "composer-size-small"
+  default     = "ENVIRONMENT_SIZE_SMALL"
 }
 
 variable "cloud_composer_scheduler_cpu" {
