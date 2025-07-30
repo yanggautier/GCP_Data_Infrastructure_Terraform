@@ -171,6 +171,7 @@ resource "google_container_cluster" "dbt_cluster" {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
   }
+  deletion_protection = var.cluster_deletion_protection
   
   depends_on = [module.networking]
 }

@@ -1,6 +1,4 @@
-# Inclut les variables globales du répertoire partagé
-# Note: Dans un vrai projet, ces variables seraient définies dans le fichier commun
-# et utilisées ici, ou overridees si nécessaire. Pour cet exemple, je les redéfinis pour la clarté.
+# Terraform variables for the dev environment
 variable "project_id" {
   description = "DVD Project ID"
   type        = string
@@ -19,6 +17,7 @@ variable "environment" {
   default     = "dev"
 }
 
+# ------------- Settings for Database ----------------------
 variable "database_name" {
   description = "Name of the Cloud SQL database"
   type        = string
@@ -31,6 +30,7 @@ variable "database_user_name" {
   default     = "dvd_rental_user"
 }
 
+# ------------- Settings for BigQuery IAM ----------------------
 variable "bigquery_owner_user" {
   description = "Email for the owner of the BigQuery dataset"
   type        = string
@@ -46,6 +46,8 @@ variable "bigquery_contributor_user" {
   type        = string
 }
 
+
+# ------------- Settings for Networking ----------------------
 # Subnetwork for Datastream
 variable "datastream_subnetwork_address" {
   description = "CIDR range for the subnetwork"
@@ -66,18 +68,23 @@ variable "datastream_private_connection_subnet" {
   default     = "10.200.0.0/24"
 }
 
+
+# ------------- Settings for Secret Manager ----------------------
+# Secret name for the Cloud SQL database password in Secret Manager
 variable "db_password_secret_name" {
   description = "Secret name form Secret Manager"
   type        = string
   default     = "postgres-instance-password"
 }
 
+# Secret version for the Cloud SQL database password in Secret Manager
 variable "secret_version" {
   description = "Version of secret in Secret Manager"
   type        = number
   default     = 1
 }
 
+# ------------- Settings for GKE ----------------------
 # Secondary subnet used for GKE Pods (Alias IP ranges)
 variable "gke_secondary_pod_range" {
   description = "Secondary IP range for GKE pods"
@@ -92,12 +99,19 @@ variable "gke_secondary_service_range" {
   default     = "10.20.0.0/20"
 }
 
+variable "cluster_deletion_protection" {
+  description = "Enable deletion protection for the GKE cluster"
+  type        = bool
+  default     = false
+}
+
 variable "gke_master_ipv4_cidr_block" {
   description = "CIDR block for the GKE master IP."
   type        = string
   default     = "172.16.0.0/28"
 }
 
+# ------------- Setting for Cloud Composer ----------------------
 # Cloud Composer variables
 variable "cloud_composer_size" {
   description = "Size of the Cloud Composer environment."
