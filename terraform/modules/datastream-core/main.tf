@@ -36,7 +36,7 @@ resource "google_datastream_private_connection" "private_connection" {
   private_connection_id = "datastream-connection-${var.environment}"
 
   vpc_peering_config {
-    vpc    = var.datastream_vpc_id
+    vpc    = var.vpc_id
     subnet = var.datastream_private_connection_subnet
   }
 
@@ -72,7 +72,7 @@ resource "google_compute_instance" "datastream_proxy" {
   }
 
   network_interface {
-    network    = var.datastream_vpc_id
+    network    = var.vpc_id
     subnetwork = var.datastream_subnet_id
     
     # No external IP needed
@@ -124,7 +124,7 @@ EOL
 # Firewall rule for SQL proxy
 resource "google_compute_firewall" "allow_datastream_to_proxy" {
   name    = "allow-datastream-to-proxy"
-  network = var.datastream_vpc_id
+  network = var.vpc_id
   project = var.project_id
   
   allow {

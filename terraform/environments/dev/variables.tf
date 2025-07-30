@@ -13,7 +13,6 @@ variable "region" {
   default     = "us-central1"
 }
 
-
 variable "environment" {
   description = "Environment for the resources (e.g., dev, staging, prod)"
   type        = string
@@ -35,25 +34,30 @@ variable "database_user_name" {
 variable "bigquery_owner_user" {
   description = "Email for the owner of the BigQuery dataset"
   type        = string
-  default     = "yangguole@outlook.com"
 }
 
 variable "bigquery_analyst_user" {
   description = "Email of the BigQuery analyst user"
   type        = string
-  default     = "inmoglio@gmail.com"
 }
 
 variable "bigquery_contributor_user" {
   description = "Email of the BigQuery contributor user"
   type        = string
-  default     = "guoleyang@gmail.com"
 }
 
-variable "subnetwork_address" {
+# Subnetwork for Datastream
+variable "datastream_subnetwork_address" {
   description = "CIDR range for the subnetwork"
   type        = string
   default     = "10.2.0.0/24"
+}
+
+# SUbnetwork for the dbt GKE cluster
+variable "gke_subnetwork_address" {
+  description = "CIDR range for the subnetwork"
+  type        = string
+  default     = "10.4.0.0/24"
 }
 
 variable "datastream_private_connection_subnet" {
@@ -68,42 +72,89 @@ variable "db_password_secret_name" {
   default     = "postgres-instance-password"
 }
 
-# Ceci est un exemple pour inclure les locals partagés
-# Dans un environnement réel, vous pourriez les gérer via un fichier `backend.tf`
-# ou en les passant en tant que variables. Pour l'exemple, nous allons les redéfinir
-# comme une source locale pour les modules qui en ont besoin.
-locals {
-  env_config = {
-    dev = {
-      instance_tier         = "db-f1-micro"
-      disk_size             = 20
-      backup_enabled        = false
-      deletion_protection   = false
-      max_replication_slots = 10
-      max_wal_senders       = 10
-    }
-    staging = {
-      instance_tier         = "db-custom-1-3840"
-      disk_size             = 50
-      backup_enabled        = true
-      deletion_protection   = false
-      max_replication_slots = 50
-      max_wal_senders       = 50
-    }
-    prod = {
-      instance_tier         = "db-custom-2-4096"
-      disk_size             = 100
-      backup_enabled        = true
-      deletion_protection   = true
-      max_replication_slots = 100
-      max_wal_senders       = 100
-    }
-  }
-  current_env = local.env_config[var.environment]
-}
-
 variable "secret_version" {
   description = "Version of secret in Secret Manager"
   type        = number
   default     = 1
+}
+
+# Secondary subnet used for GKE Pods (Alias IP ranges)
+variable "gke_secondary_pod_range" {
+  description = "Secondary IP range for GKE pods"
+  type        = string
+  default     = "10.10.0.0/16"
+}
+
+# Secondary subnet used for GKE Services (Alias IP ranges)
+variable "gke_secondary_service_range" {
+  description = "Secondary IP range for GKE services"
+  type        = string
+  default     = "10.20.0.0/20"
+}
+
+variable "gke_master_ipv4_cidr_block" {
+  description = "CIDR block for the GKE master IP."
+  type        = string
+  default     = "172.16.0.0/28"
+}
+
+# Cloud Composer variables
+variable "cloud_composer_size" {
+  description = "Size of the Cloud Composer environment."
+  type        = string
+  default     = "composer-size-small"
+}
+
+variable "cloud_composer_scheduler_cpu" {
+  description = "CPU count for the Cloud Composer scheduler."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_scheduler_memory_gb" {
+  description = "Memory in GB for the Cloud Composer scheduler."
+  type        = number
+  default     = 2
+}
+
+variable "cloud_composer_scheduler_storage_gb" {
+  description = "Storage in GB for the Cloud Composer scheduler."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_webserver_cpu" {
+  description = "CPU count for the Cloud Composer web server."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_websever_memory_gb" {
+  description = "Memory in GB for the Cloud Composer web server."
+  type        = number
+  default     = 2
+}
+
+variable "cloud_composer_webserver_storage_gb" {
+  description = "Storage in GB for the Cloud Composer web server."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_worker_cpu" {
+  description = "CPU count for the Cloud Composer worker."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_worker_memory_gb" {
+  description = "Memory in GB for the Cloud Composer worker."
+  type        = number
+  default     = 2
+}
+
+variable "cloud_composer_worker_storage_gb" {
+  description = "Storage in GB for the Cloud Composer worker."
+  type        = number
+  default     = 10
 }

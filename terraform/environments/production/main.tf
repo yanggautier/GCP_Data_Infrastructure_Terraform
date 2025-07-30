@@ -77,7 +77,7 @@ module "database" {
   environment                  = var.environment
   database_name                = var.database_name
   database_user_name           = var.database_user_name
-  datastream_vpc_id            = module.networking.datastream_vpc_id
+  vpc_id            = module.networking.vpc_id
   private_vpc_connection_id    = module.networking.private_ip_alloc_name
   instance_tier                = local.current_env.instance_tier
   disk_size                    = local.current_env.disk_size
@@ -87,7 +87,7 @@ module "database" {
   max_wal_senders              = local.current_env.max_wal_senders
   db_password_secret_name      = var.db_password_secret_name
   secret_version               = var.secret_version
-  datastream_vpc_name          = module.networking.datastream_vpc_name
+  vpc_name          = module.networking.vpc_name
   datastream_subset_name       = module.networking.datastream_subnet_name
   private_vpc_connection       = module.networking.private_vpc_connection 
 
@@ -100,7 +100,7 @@ module "datastream_core" {
   project_id                   = var.project_id
   region                       = var.region
   environment                  = var.environment
-  datastream_vpc_id            = module.networking.datastream_vpc_id
+  vpc_id            = module.networking.vpc_id
   private_vpc_connection_id    = module.networking.private_ip_alloc_name
   database_name                = var.database_name
   database_user_name           = var.database_user_name

@@ -11,7 +11,7 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
   database_version = "POSTGRES_15"
 
   depends_on = [
-    var.datastream_vpc_id,
+    var.vpc_id,
     var.private_vpc_connection_id # Wait for private connection
   ]
 
@@ -43,7 +43,7 @@ resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
     
     ip_configuration {
       ipv4_enabled                        = true
-      private_network                     = var.datastream_vpc_id
+      private_network                     = var.vpc_id
       enable_private_path_for_google_cloud_services = true
     }
 

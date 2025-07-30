@@ -1,19 +1,31 @@
-output "datastream_vpc_id" {
+output "vpc_id" {
   description = "ID of the Datastream VPC network."
-  value       = google_compute_network.datastream_vpc.id
+  value       = google_compute_network.vpc.id
 }
 
-output "datastream_vpc_name" {
+output "vpc_name" {
   description = "Name of the Datastream VPC network."
-  value       = google_compute_network.datastream_vpc.name
+  value       = google_compute_network.vpc.name
 }
 
+# Réseau VPC pour Datastream
 output "datastream_subnet_id" {
   description = "ID of the Datastream subnetwork."
   value       = google_compute_subnetwork.datastream_subnet.id
 }
 
 output "datastream_subnet_name" {
+  description = "Name of the Datastream subnetwork."
+  value       = google_compute_subnetwork.datastream_subnet.name
+}
+
+# Outputs for Datastream VPC and subnetwork for DBT orchestration
+output "gke_subnet_id" {
+  description = "ID of the Datastream subnetwork."
+  value       = google_compute_subnetwork.gke_subnet.id
+}
+
+output "gke_subnet_name" {
   description = "Name of the Datastream subnetwork."
   value       = google_compute_subnetwork.datastream_subnet.name
 }

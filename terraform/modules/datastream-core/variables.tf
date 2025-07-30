@@ -18,7 +18,7 @@ variable "datastream_private_connection_subnet" {
   type = string
 }
 
-variable "datastream_vpc_id" {
+variable "vpc_id" {
   description = "ID of the Datastream VPC network."
   type        = string
 }
