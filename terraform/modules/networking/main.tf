@@ -82,8 +82,6 @@ resource "google_compute_firewall" "allow_internal" {
   priority    = 65534
 }
 
-
-
 # Add a second private IP allocation for Cloud Build Private Pool
 resource "google_compute_global_address" "private_ip_alloc_cb" {
   project       = var.project_id
@@ -107,5 +105,10 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   timeouts {
     create = "10m"
     delete = "10m"
+  }
+
+  lifecycle {
+    prevent_destroy = var.prevent_destroy_private_vpc_connection 
+    create_before_destroy = true
   }
 }

@@ -133,6 +133,20 @@ module "bigquery" {
   depends_on = [google_project_service.apis]
 }
 
+# Create a GKE Cluster Service Account
+resource "google_service_account" "gke_node_service_account" {
+  account_id   = "gke-node-service-account"
+  display_name = "GKE Node Service Account"
+  project      = var.project_id
+}
+
+# Assign the GKE Cluster Service Account the Container Admin role
+resource "google_project_iam_member" "cluster_admin_role" {
+  project = var.project_id
+  role    = "roles/container.admin"
+  member  = "serviceAccount:${google_service_account.gke_cluster_service_account.email}"
+}
+
 # Cluster GKE
 resource "google_container_cluster" "dbt_cluster" {
   name       = "dbt-cluster-${var.environment}"
@@ -157,6 +171,7 @@ resource "google_container_cluster" "dbt_cluster" {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
   }
+  
   depends_on = [module.networking]
 }
 
