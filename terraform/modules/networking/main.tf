@@ -106,9 +106,4 @@ resource "google_service_networking_connection" "private_vpc_connection" {
     create = "10m"
     delete = "10m"
   }
-
-  lifecycle {
-    prevent_destroy = var.prevent_destroy_private_vpc_connection 
-    create_before_destroy = true
-  }
 }

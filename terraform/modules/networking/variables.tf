@@ -32,13 +32,6 @@ variable "gke_secondary_service_range" {
   description = "Secondary IP range for GKE services"
   type        = string
 }
-
-variable "prevent_destroy_private_vpc_connection" {
-  description = "Prevent destruction of the private VPC connection."
-  type        = bool
-  default     = false
-}
-
 /*
 variable "datastream_service_account_email" {
   description = "Email of the Datastream service account."
