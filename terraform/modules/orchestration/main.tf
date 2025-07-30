@@ -47,7 +47,7 @@ resource "google_composer_environment" "dbt_orchestration" {
 
   config {
     software_config {
-      image_version = var.cloud_composer_size
+      image_version = var.cloud_composer_version
     }
 
     environment_size = var.cloud_composer_size
