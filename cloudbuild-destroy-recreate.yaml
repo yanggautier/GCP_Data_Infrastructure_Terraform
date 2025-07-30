@@ -16,7 +16,7 @@ steps:
     args: [
       'destroy', 
       '-auto-approve',
-      '-target=module.networking.google_compute_network.datastream_vpc',
+      '-target=module.networking.google_compute_network.vpc',
       '-target=module.orchestration.google_cloud_run_service.dbt_runner',
       '-target=module.orchestration.google_service_account.cloud_composer_service_account',
       '-target=module.orchestration.google_artifact_registry_repository.dbt_repo'

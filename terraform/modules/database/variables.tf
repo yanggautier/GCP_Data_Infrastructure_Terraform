@@ -23,7 +23,7 @@ variable "database_user_name" {
   type        = string
 }
 
-variable "datastream_vpc_id" {
+variable "vpc_id" {
   description = "ID of the Datastream VPC network."
   type        = string
 }
@@ -68,7 +68,7 @@ variable "db_password_secret_name" {
   type        = string
 }
 
-variable "datastream_vpc_name" {
+variable "vpc_name" {
   description = "Datastream VPC name"
   type        = string
 }

@@ -1,33 +1,51 @@
-# Crée un réseau VPC et un sous-réseau pour Datastream
-resource "google_compute_network" "datastream_vpc" {
+# Create a VPC network for Datastream and dbt GKE cluster
+resource "google_compute_network" "vpc" {
   name                    = "datastream-vpc"
   auto_create_subnetworks = false
   project                 = var.project_id
 }
 
-# Crée un sous-réseau pour Datastream
+# Create a subnetwork for Datastream
 resource "google_compute_subnetwork" "datastream_subnet" {
   project       = var.project_id
   region        = var.region
   name          = "datastream-subnet"
-  ip_cidr_range = var.subnetwork_address
-  network       = google_compute_network.datastream_vpc.id
+  ip_cidr_range = var.datastream_subnetwork_address
+  network       = google_compute_network.vpc.id
 }
 
-# Réserve une plage d'adresses IP pour les services privés (Cloud SQL)
+# Create a subnetwork for the dbt GKE cluster
+resource "google_compute_subnetwork" "gke_subnet" {
+  project       = var.project_id
+  region        = var.region
+  name          = "dbt-cluster-subnet"
+  ip_cidr_range = var.gke_subnetwork_address
+  network       = google_compute_network.vpc.id
+
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = var.gke_secondary_pod_range
+  }
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = var.gke_secondary_service_range
+  }
+}
+
+# Create a global address for private IP allocation
 resource "google_compute_global_address" "private_ip_alloc" {
   project       = var.project_id
   name          = "private-ip-alloc"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
-  network       = google_compute_network.datastream_vpc.id
+  network       = google_compute_network.vpc.id
 }
 
-# Règles de pare-feu pour la connectivité Datastream
+# Autorise Datastream à accéder à Cloud SQL
 resource "google_compute_firewall" "allow_datastream_to_sql" {
   name    = "allow-datastream-to-sql"
-  network = google_compute_network.datastream_vpc.name
+  network = google_compute_network.vpc.name
   project = var.project_id
   allow {
     protocol = "tcp"
@@ -35,7 +53,7 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
   }
   direction = "INGRESS"
   source_ranges = [
-    var.subnetwork_address, # Datastream subnet
+    var.datastream_subnetwork_address, # Datastream subnet
     "10.3.0.0/24",        # Private connection subnet for Datastream
     "169.254.0.0/16",     # Google internal networking
     "${google_compute_global_address.private_ip_alloc.address}/${google_compute_global_address.private_ip_alloc.prefix_length}",
@@ -43,10 +61,10 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
   priority    = 500
 }
 
-# Autorise la communication interne au VPC
+# Authorise Cloud SQL to access Datastream
 resource "google_compute_firewall" "allow_internal" {
   name    = "allow-internal-vpc"
-  network = google_compute_network.datastream_vpc.name
+  network = google_compute_network.vpc.name
   project = var.project_id
   allow {
     protocol = "tcp"
@@ -73,7 +91,7 @@ resource "google_compute_global_address" "private_ip_alloc_cb" {
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16 # A /16 block is recommended for expandability
-  network       = google_compute_network.datastream_vpc.id
+  network       = google_compute_network.vpc.id
   # You can specify a specific address here if you want to control the range,
   # but letting Google allocate it is generally fine if your VPC has space.
   # address = "10.5.0.0" # Optional: If you want to force 10.5.0.0/16
@@ -82,7 +100,7 @@ resource "google_compute_global_address" "private_ip_alloc_cb" {
 
 # Crée une connexion de service privée pour Cloud SQL
 resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = google_compute_network.datastream_vpc.id
+  network                 = google_compute_network.vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_alloc.name,
                              google_compute_global_address.private_ip_alloc_cb.name]

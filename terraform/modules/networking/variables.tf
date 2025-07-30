@@ -13,8 +13,23 @@ variable "environment" {
   type        = string
 }
 
-variable "subnetwork_address" {
+variable "datastream_subnetwork_address" {
   description = "CIDR range for the subnetwork"
+  type        = string
+}
+
+variable "gke_subnetwork_address" {
+  description = "CIDR range for the dbt gke clustor subnetwork"
+  type        = string
+}
+
+variable "gke_secondary_pod_range" {
+  description = "Secondary IP range for GKE pods"
+  type        = string
+}
+
+variable "gke_secondary_service_range" {
+  description = "Secondary IP range for GKE services"
   type        = string
 }
 

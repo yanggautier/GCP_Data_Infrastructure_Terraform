@@ -8,7 +8,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "state-file-dev-buckets"  # it must be a static bucket not a dynamic bucket name
+    bucket = "state-file-dev-buckets" # it must be a static bucket not a dynamic bucket name
     prefix = "terraform/state"
   }
 }
@@ -45,14 +45,15 @@ resource "google_project_service" "apis" {
 
 
 module "networking" {
-  source             = "../../modules/networking"
-  project_id         = var.project_id
-  region             = var.region
-  environment        = var.environment
-  subnetwork_address = var.subnetwork_address
-  # datastream_service_account_email = module.datastream_core.datastream_service_account_email
-
-  depends_on = [google_project_service.apis]
+  source                        = "../../modules/networking"
+  project_id                    = var.project_id
+  region                        = var.region
+  environment                   = var.environment
+  datastream_subnetwork_address = var.datastream_subnetwork_address
+  gke_subnetwork_address        = var.gke_subnetwork_address
+  gke_secondary_pod_range       = var.gke_secondary_pod_range
+  gke_secondary_service_range   = var.gke_secondary_service_range
+  depends_on                    = [google_project_service.apis]
 }
 
 module "storage" {
@@ -71,8 +72,6 @@ module "database" {
   environment               = var.environment
   database_name             = var.database_name
   database_user_name        = var.database_user_name
-  datastream_vpc_id         = module.networking.datastream_vpc_id
-  private_vpc_connection_id = module.networking.private_ip_alloc_name
   instance_tier             = local.current_env.instance_tier
   disk_size                 = local.current_env.disk_size
   backup_enabled            = local.current_env.backup_enabled
@@ -81,11 +80,12 @@ module "database" {
   max_wal_senders           = local.current_env.max_wal_senders
   db_password_secret_name   = var.db_password_secret_name
   secret_version            = var.secret_version
-  datastream_vpc_name       = module.networking.datastream_vpc_name
+  vpc_id                    = module.networking.vpc_id
+  private_vpc_connection_id = module.networking.private_ip_alloc_name
+  vpc_name                  = module.networking.vpc_name
   datastream_subset_name    = module.networking.datastream_subnet_name
   private_vpc_connection    = module.networking.private_vpc_connection
-
-  depends_on = [google_project_service.apis, module.networking]
+  depends_on                = [google_project_service.apis, module.networking]
 }
 
 # Remplacez l'ancien module "datastream" par "datastream_core"
@@ -94,7 +94,7 @@ module "datastream_core" {
   project_id                           = var.project_id
   region                               = var.region
   environment                          = var.environment
-  datastream_vpc_id                    = module.networking.datastream_vpc_id
+  vpc_id                               = module.networking.vpc_id
   private_vpc_connection_id            = module.networking.private_ip_alloc_name
   database_name                        = var.database_name
   database_user_name                   = var.database_user_name
@@ -106,7 +106,6 @@ module "datastream_core" {
   depends_on                           = [google_project_service.apis, module.database, module.networking]
   datastream_private_connection_subnet = var.datastream_private_connection_subnet
 }
-
 
 module "bigquery" {
   source                           = "../../modules/bigquery"
@@ -122,12 +121,24 @@ module "bigquery" {
 }
 
 module "orchestration" {
-  source      = "../../modules/orchestration"
-  project_id  = var.project_id
-  region      = var.region
-  environment = var.environment
-
-  depends_on = [google_project_service.apis]
+  source                              = "../../modules/orchestration"
+  project_id                          = var.project_id
+  region                              = var.region
+  environment                         = var.environment
+  vpc_id                              = module.networking.vpc_id
+  gke_subnet_id                       = module.networking.gke_subnet_id
+  cloud_composer_size                 = var.cloud_composer_size
+  cloud_composer_scheduler_cpu        = var.cloud_composer_scheduler_cpu
+  cloud_composer_scheduler_memory_gb  = var.cloud_composer_scheduler_memory_gb
+  cloud_composer_scheduler_storage_gb = var.cloud_composer_scheduler_storage_gb
+  cloud_composer_webserver_cpu        = var.cloud_composer_webserver_cpu
+  cloud_composer_websever_memory_gb   = var.cloud_composer_websever_memory_gb
+  cloud_composer_webserver_storage_gb = var.cloud_composer_webserver_storage_gb
+  cloud_composer_worker_cpu           = var.cloud_composer_worker_cpu
+  cloud_composer_worker_memory_gb     = var.cloud_composer_worker_memory_gb
+  cloud_composer_worker_storage_gb    = var.cloud_composer_worker_storage_gb
+  gke_master_ipv4_cidr_block          = var.gke_master_ipv4_cidr_block
+  depends_on                          = [google_project_service.apis]
 }
 
 module "datastream_stream" {

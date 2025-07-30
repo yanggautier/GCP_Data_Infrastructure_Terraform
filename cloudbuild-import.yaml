@@ -13,7 +13,7 @@ steps:
   # Import existing resources to avoid conflicts
   - id: 'import-vpc'
     name: 'hashicorp/terraform:1.11.4'
-    args: ['import', 'module.networking.google_compute_network.datastream_vpc', 'projects/dbt-project-dvd-rent-464116/global/networks/datastream-vpc']
+    args: ['import', 'module.networking.google_compute_network.vpc', 'projects/dbt-project-dvd-rent-464116/global/networks/datastream-vpc']
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-validate']
     allowFailure: true  # Continue even if import fails (resource might not exist)

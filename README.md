@@ -3,6 +3,16 @@
 
 
 ## Settings
+
+1. Create a Google Cloud project
+```bash
+ gcloud projects create PROJECT_ID 
+```
+2.  Select the Google Cloud project that you created
+```
+gcloud config set project PROJECT_ID
+```
+
 1. Install Terraform on your machine
 2. Install Google Cloud CLI
 After installing the Google Cloud CLI, initialize it by running the following command:
@@ -65,7 +75,7 @@ terraform destroy -auto-approve
 Delete on resource
  
 ```bash
-terraform destroy -target=google_compute_network.datastream_vpc
+terraform destroy -target=google_compute_network.vpc
 ```
 
 
