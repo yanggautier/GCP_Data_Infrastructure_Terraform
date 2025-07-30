@@ -22,7 +22,7 @@ provider "google" {
 # Remplacer votre bloc locals actuel par :
 locals {
   # Charger la configuration depuis le fichier YAML
-  shared_config = yamldecode(file("${path.module}/../../shared/locals.yaml"))
+  shared_config = yamldecode(file("${path.root}/../../shared/locals.yaml"))
 
   # Sélectionner la configuration de l'environnement actuel
   current_env = local.shared_config.env_config[var.environment]
