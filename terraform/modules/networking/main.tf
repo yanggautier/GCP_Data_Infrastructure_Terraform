@@ -21,7 +21,8 @@ resource "google_compute_subnetwork" "gke_subnet" {
   name          = "dbt-cluster-subnet"
   ip_cidr_range = var.gke_subnetwork_address
   network       = google_compute_network.vpc.id
-
+  # Enable private IP Google access for GKE
+  private_ip_google_access = true
   secondary_ip_range {
     range_name    = "pods"
     ip_cidr_range = var.gke_secondary_pod_range
@@ -61,7 +62,7 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
   priority    = 500
 }
 
-# Authorise Cloud SQL to access Datastream
+# Authorise services to access vpc subnetworks
 resource "google_compute_firewall" "allow_internal" {
   name    = "allow-internal-vpc"
   network = google_compute_network.vpc.name
@@ -78,7 +79,11 @@ resource "google_compute_firewall" "allow_internal" {
     protocol = "icmp"
   }
   direction   = "INGRESS"
-  source_ranges = ["10.0.0.0/8"]
+  // source_ranges = ["10.0.0.0/8"]
+  source_ranges = [
+    var.gke_subnetwork_address, # GKE subnet
+    var.datastream_subnetwork_address, # Datastream subnet
+  ]
   priority    = 65534
 }
 
@@ -94,7 +99,6 @@ resource "google_compute_global_address" "private_ip_alloc_cb" {
   # but letting Google allocate it is generally fine if your VPC has space.
   # address = "10.5.0.0" # Optional: If you want to force 10.5.0.0/16
 }
-
 
 # Crée une connexion de service privée pour Cloud SQL
 resource "google_service_networking_connection" "private_vpc_connection" {

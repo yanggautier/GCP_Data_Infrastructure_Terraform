@@ -13,9 +13,9 @@ output "postgresql_setup_commands" {
   value       = module.database.postgresql_setup_commands
 }
 
-output "bigquery_dataset_id" {
+output "bigquery_bronze_dataset_id" {
   description = "ID of the BigQuery dataset."
-  value       = module.bigquery.bigquery_dataset_id
+  value       = module.bigquery.bigquery_bronze_dataset_id
 }
 
 output "datastream_service_account_email" {

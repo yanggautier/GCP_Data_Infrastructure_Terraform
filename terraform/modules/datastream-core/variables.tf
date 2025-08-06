@@ -49,8 +49,8 @@ variable "database_user_name" {
   type        = string
 }
 
-variable "bigquery_dataset_id" {
-  description = "ID of the BigQuery dataset."
+variable "bigquery_bronze_dataset_id" {
+  description = "ID of the BigQuery source dataset."
   type        = string
 }
 

@@ -30,7 +30,7 @@ resource "google_datastream_stream" "postgres_to_bigquery_stream" {
     bigquery_destination_config {
       data_freshness = "900s"
       single_target_dataset {
-        dataset_id = "${var.project_id}:${var.bigquery_dataset_id}"
+        dataset_id = "${var.project_id}:${var.bigquery_bronze_dataset_id}"
       }
     }
   }

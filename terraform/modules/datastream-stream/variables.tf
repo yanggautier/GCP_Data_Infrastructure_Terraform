@@ -32,7 +32,7 @@ variable "destination_connection_profile_object" {
   })
 }
 
-variable "bigquery_dataset_id" {
+variable "bigquery_bronze_dataset_id" {
   description = "ID of the BigQuery dataset where data will be streamed."
   type        = string
 }

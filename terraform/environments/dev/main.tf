@@ -5,6 +5,18 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 5.0"
     }
+
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 5.0"
+    }
+
+    /*
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
+    */
   }
 
   backend "gcs" {
@@ -107,7 +119,7 @@ module "datastream_core" {
   database_user_name                   = var.database_user_name
   datastream_subnet_id                 = module.networking.datastream_subnet_id
   db_password_secret_name              = var.db_password_secret_name
-  bigquery_dataset_id                  = module.bigquery.bigquery_dataset_id
+  bigquery_bronze_dataset_id           = module.bigquery.bigquery_bronze_dataset_id
   wait_for_sql_instance_id             = module.database.time_sleep_wait_for_sql_instance_id
   cloud_sql_private_ip                 = module.database.cloud_sql_private_ip
   datastream_private_connection_subnet = var.datastream_private_connection_subnet
@@ -119,6 +131,13 @@ module "datastream_core" {
   ]
 
 }
+# Create a service account for DBT to access BigQuery
+resource "google_service_account" "dbt_sa" {
+  account_id   = "dbt-bigquery-sa"
+  display_name = "DBT BigQuery Service Account"
+  project      = var.project_id
+  description  = "Service account for DBT to access BigQuery"
+}
 
 module "bigquery" {
   source                           = "../../modules/bigquery"
@@ -129,10 +148,11 @@ module "bigquery" {
   bigquery_analyst_user            = var.bigquery_analyst_user
   bigquery_contributor_user        = var.bigquery_contributor_user
   datastream_service_account_email = module.datastream_core.datastream_service_account_email
+  dbt_service_account_email        = google_service_account.dbt_sa.email
 
-  depends_on = [google_project_service.apis]
+  depends_on = [google_project_service.apis, google_service_account.dbt_sa]
 }
-
+/*
 # Create a GKE Cluster Service Account
 resource "google_service_account" "gke_node_service_account" {
   account_id   = "gke-node-service-account"
@@ -175,13 +195,15 @@ resource "google_container_cluster" "dbt_cluster" {
   
   depends_on = [module.networking]
 }
-
+*/
+/*
 provider "kubernetes" {
   host                   = google_container_cluster.dbt_cluster.endpoint
   token                  = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate)
   # Explicitly depend on the GKE cluster to ensure it's ready before configuring the Kubernetes provider
 }
+*/
 
 module "orchestration" {
   source                              = "../../modules/orchestration"
@@ -200,11 +222,16 @@ module "orchestration" {
   cloud_composer_worker_cpu           = var.cloud_composer_worker_cpu
   cloud_composer_worker_memory_gb     = var.cloud_composer_worker_memory_gb
   cloud_composer_worker_storage_gb    = var.cloud_composer_worker_storage_gb
+  gke_master_ipv4_cidr_block          = var.gke_master_ipv4_cidr_block
+  cluster_deletion_protection         = var.cluster_deletion_protection
+  bigquery_bronze_dataset_id          = module.bigquery.bigquery_bronze_dataset_id
+  dbt_service_account_email           = google_service_account.dbt_sa.email
+  dbt_service_account_id              = google_service_account.dbt_sa.name
 
   depends_on = [
     google_project_service.apis,
     module.networking,
-    google_container_cluster.dbt_cluster
+    google_service_account.dbt_sa
   ]
 }
 
@@ -213,7 +240,7 @@ module "datastream_stream" {
   project_id                            = var.project_id
   region                                = var.region
   environment                           = var.environment
-  bigquery_dataset_id                   = module.bigquery.bigquery_dataset_id
+  bigquery_bronze_dataset_id            = module.bigquery.bigquery_bronze_dataset_id
   source_connection_profile_object      = module.datastream_core.datastream_source_connection_profile_object
   destination_connection_profile_object = module.datastream_core.datastream_destination_connection_profile_object
 

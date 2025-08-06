@@ -32,3 +32,8 @@ variable "datastream_service_account_email" {
   description = "Email of the Datastream service account."
   type        = string
 }
+
+variable "dbt_service_account_email" {
+  description = "Email of the DBT service account."
+  type        = string
+}

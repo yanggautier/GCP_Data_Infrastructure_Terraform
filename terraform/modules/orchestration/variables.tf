@@ -18,11 +18,37 @@ variable "vpc_id" {
   type        = string   
 }
 
+variable "dbt_namespace" {
+  description = "Namespace for DBT in GKE."
+  type        = string
+  default     = "dbt"
+}
+
 variable "gke_subnet_id" {
   description = "ID of the subnetwork for the GKE cluster."
   type        = string  
 }
 
+# ------------------ Variables for GKE ----------------------
+variable "cluster_deletion_protection" {
+  description = "Enable deletion protection for the GKE cluster"
+  type        = bool
+}
+
+variable "gke_master_ipv4_cidr_block" {
+  description = "CIDR block for the GKE master IP."
+  type        = string
+}
+
+variable "dbt_service_account_email" {
+  description = "Email of the DBT service account."
+  type        = string
+}
+variable "dbt_service_account_id" {
+  description = "ID of the DBT service account."
+  type        = string
+}
+# ------------- Variables for Cloud Composer ----------------
 variable "cloud_composer_version" {
   description = "Version of Cloud Composer to use."
   type        = string
@@ -87,4 +113,10 @@ variable "cloud_composer_worker_storage_gb" {
   description = "Storage in GB for the Cloud Composer worker."
   type        = number
   default     = 10
+}
+
+# ------------------ Variables for BigQuery ------------------
+variable "bigquery_bronze_dataset_id" {
+  description = "ID of the BigQuery dataset."
+  type        = string  
 }

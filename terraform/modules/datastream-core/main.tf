@@ -183,7 +183,7 @@ resource "google_datastream_connection_profile" "destination" {
   }
 
   depends_on = [
-    var.bigquery_dataset_id,
+    var.bigquery_bronze_dataset_id,
     google_datastream_private_connection.private_connection
   ]
 }

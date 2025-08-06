@@ -1,5 +1,10 @@
 # GCP Data pipeline with DBT
 
+## TODO 
+- Name of resource with environment
+- Tag of environment
+
+
 ## Description
 Manage and configuration data infrastructure by using Terraform, this infrastructure includes GCS for Datalake, BigQuery for DataWarehouse, GKE for deploy DBT instance in Kubernetes Clusters.
 

@@ -139,7 +139,7 @@ module "datastream_stream" {
   project_id                            = var.project_id
   region                                = var.region
   environment                           = var.environment
-  bigquery_dataset_id                   = module.bigquery.bigquery_dataset_id
+  bigquery_dataset_id                   = module.bigquery.bigquery_bronze_dataset_id
   source_connection_profile_object      = module.datastream_core.datastream_source_connection_profile_object
   destination_connection_profile_object = module.datastream_core.datastream_destination_connection_profile_object
 
