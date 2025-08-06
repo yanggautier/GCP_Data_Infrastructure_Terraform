@@ -71,13 +71,14 @@ resource "google_container_cluster" "dbt_cluster" {
   # initial_node_count       = 1
   # remove_default_node_pool = true
 
+  /*
   # Enable private cluster
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
     master_ipv4_cidr_block  = var.gke_master_ipv4_cidr_block
   }
-
+  */
   # Enable IP aliasing for GKE
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
