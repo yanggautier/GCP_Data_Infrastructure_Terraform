@@ -27,7 +27,7 @@ with DAG(
         volume_mounts=[
             {
                 "name": "dbt-profiles",
-                "mount_path": "/app/profiles",
+                "mount_path": "/opt/dbt/profiles",
                 "read_only": True
             }
         ],
