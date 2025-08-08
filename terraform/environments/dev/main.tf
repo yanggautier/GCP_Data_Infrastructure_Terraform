@@ -11,6 +11,10 @@ terraform {
       version = "~> 5.0"
     }
 
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+    }
+
     /*
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -205,6 +209,8 @@ resource "google_container_cluster" "dbt_cluster" {
   deletion_protection = var.cluster_deletion_protection
 }
 
+data "google_client_config" "default" {}
+
 provider "kubernetes" {
   host                   = google_container_cluster.dbt_cluster.endpoint
   token                  = data.google_client_config.default.access_token
@@ -240,7 +246,7 @@ module "orchestration" {
     google_project_service.apis,
     module.networking,
     google_service_account.dbt_sa,
-    provider.kubernetes
+    google_container_cluster.dbt_cluster
   ]
 }
 
