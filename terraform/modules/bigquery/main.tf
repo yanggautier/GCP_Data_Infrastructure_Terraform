@@ -14,18 +14,24 @@ resource "google_bigquery_dataset" "bronze_dataset" {
     user_by_email = var.bigquery_owner_user
   }
 
+  access {
+    role          = "roles/bigquery.dataViewer"
+    user_by_email = var.bigquery_analyst_user
+  }
+
   # Access for the Datastream service account
   access {
     role          = "roles/bigquery.dataEditor"
     user_by_email = var.datastream_service_account_email
   }
 
-  # Viewer access 
+  # Access for the DBT service account
   access {
     role          = "roles/bigquery.dataViewer"
-    user_by_email =[var.dbt_service_account_email, var.bigquery_analyst_user]
+    user_by_email = var.dbt_service_account_email
   }
 }
+
 
 # Create a BigQuery dataset for the silver layer
 resource "google_bigquery_dataset" "silver_dataset" {
