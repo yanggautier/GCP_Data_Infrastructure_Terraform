@@ -94,7 +94,7 @@ resource "google_container_cluster" "dbt_cluster" {
   # Enable deletion protection for the GKE cluster
   deletion_protection = var.cluster_deletion_protection
 }
-
+*/
 # Configure for DBT profiles
 resource "google_secret_manager_secret" "dbt_profiles" {
   secret_id = "dbt-profiles-${var.environment}"
@@ -104,7 +104,6 @@ resource "google_secret_manager_secret" "dbt_profiles" {
     auto {}
   }
 }
-*/
 
 resource "google_secret_manager_secret_version" "dbt_profiles_version" {
   secret      = google_secret_manager_secret.dbt_profiles.id
