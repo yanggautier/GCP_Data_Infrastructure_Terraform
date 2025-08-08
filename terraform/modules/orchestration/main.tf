@@ -114,11 +114,17 @@ resource "google_secret_manager_secret_version" "dbt_profiles_version" {
   })
 }
 
+resource "kubernetes_namespace" "dbt_namespace" {
+  metadata {
+    name = var.dbt_namespace
+  }
+}
+
 # CSI Secret Store Driver
 resource "kubernetes_secret" "dbt_config" {
   metadata {
     name      = "dbt-config"
-    namespace = var.dbt_namespace
+    namespace = kubernetes_namespace.dbt_namespace.metadata[0].name
   }
   data = {
     "profiles.yml" = base64encode(google_secret_manager_secret_version.dbt_profiles_version.secret_data)
@@ -129,7 +135,7 @@ resource "kubernetes_secret" "dbt_config" {
 resource "kubernetes_network_policy" "dbt_network_policy" {
   metadata {
     name      = "dbt-network-policy"
-    namespace = var.dbt_namespace
+    namespace = kubernetes_namespace.dbt_namespace.metadata[0].name
   }
 
   spec {
