@@ -43,6 +43,7 @@ resource "google_artifact_registry_repository" "dbt_repo" {
 }
 
 # ----------------- Configuration for Cluster GKE ---------------------
+/*
 # Create a GKE Cluster Service Account
 resource "google_service_account" "gke_node_service_account" {
   account_id   = "gke-node-service-account"
@@ -56,6 +57,7 @@ resource "google_project_iam_member" "cluster_admin_role" {
   role    = "roles/container.admin"
   member  = "serviceAccount:${google_service_account.gke_node_service_account.email}"
 }
+
 
 # Cluster GKE
 resource "google_container_cluster" "dbt_cluster" {
@@ -71,14 +73,13 @@ resource "google_container_cluster" "dbt_cluster" {
   # initial_node_count       = 1
   # remove_default_node_pool = true
 
-  /*
   # Enable private cluster
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
     master_ipv4_cidr_block  = var.gke_master_ipv4_cidr_block
   }
-  */
+  
   # Enable IP aliasing for GKE
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -103,6 +104,7 @@ resource "google_secret_manager_secret" "dbt_profiles" {
     auto {}
   }
 }
+*/
 
 resource "google_secret_manager_secret_version" "dbt_profiles_version" {
   secret      = google_secret_manager_secret.dbt_profiles.id

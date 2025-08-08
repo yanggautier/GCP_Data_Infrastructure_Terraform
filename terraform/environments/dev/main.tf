@@ -152,7 +152,7 @@ module "bigquery" {
 
   depends_on = [google_project_service.apis, google_service_account.dbt_sa]
 }
-/*
+
 # Create a GKE Cluster Service Account
 resource "google_service_account" "gke_node_service_account" {
   account_id   = "gke-node-service-account"
@@ -167,11 +167,13 @@ resource "google_project_iam_member" "cluster_admin_role" {
   member  = "serviceAccount:${google_service_account.gke_node_service_account.email}"
 }
 
+
 # Cluster GKE
 resource "google_container_cluster" "dbt_cluster" {
   name       = "dbt-cluster-${var.environment}"
   location   = var.region
   project    = var.project_id
+
   network    = module.networking.vpc_id
   subnetwork = module.networking.gke_subnet_id
   # Configuration for Autopilot mode
@@ -180,30 +182,36 @@ resource "google_container_cluster" "dbt_cluster" {
   # initial_node_count       = 1
   # remove_default_node_pool = true
 
+  /*
   # Enable private cluster
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
     master_ipv4_cidr_block  = var.gke_master_ipv4_cidr_block
   }
+  */
   # Enable IP aliasing for GKE
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
   }
+
+  # Enable Workload Identity
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
+  # Enable deletion protection for the GKE cluster
   deletion_protection = var.cluster_deletion_protection
-  
-  depends_on = [module.networking]
 }
-*/
-/*
+
 provider "kubernetes" {
   host                   = google_container_cluster.dbt_cluster.endpoint
   token                  = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate)
   # Explicitly depend on the GKE cluster to ensure it's ready before configuring the Kubernetes provider
 }
-*/
+
 
 module "orchestration" {
   source                              = "../../modules/orchestration"
@@ -231,7 +239,8 @@ module "orchestration" {
   depends_on = [
     google_project_service.apis,
     module.networking,
-    google_service_account.dbt_sa
+    google_service_account.dbt_sa,
+    provider.kubernetes
   ]
 }
 

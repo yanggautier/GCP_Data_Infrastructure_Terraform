@@ -30,6 +30,7 @@ resource "google_bigquery_dataset" "bronze_dataset" {
     role          = "roles/bigquery.dataViewer"
     user_by_email = var.dbt_service_account_email
   }
+  
 }
 
 
