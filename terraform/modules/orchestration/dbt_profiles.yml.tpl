@@ -1,4 +1,4 @@
-dbt_project:
+dbt_gcp_project:
   target: "{{ env_var('DBT_TARGET', 'dev') }}"
   outputs:
     dev:
