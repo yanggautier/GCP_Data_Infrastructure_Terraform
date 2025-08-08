@@ -302,7 +302,7 @@ resource "google_composer_environment" "dbt_orchestration" {
 
 resource "google_storage_bucket_object" "dbt_dag_file" {
   name  = "dags/dbt_dag.py"
-  bucket = replace(google_composer_environment.dbt_orchestration.config[0].dag_gcs_prefix, "gs://", "")
+  bucket = split("/", replace(google_composer_environment.dbt_orchestration.config[0].dag_gcs_prefix, "gs://", ""))[0]
   content = templatefile("${path.module}/../../dags/dbt_dag.py.tpl", {
     dbt_namespace = var.dbt_namespace
     dbt_k8s_sa_name = kubernetes_service_account.dbt_k8s_sa.metadata[0].name
