@@ -24,6 +24,11 @@ resource "kubernetes_service_account" "dbt_k8s_sa" {
       "iam.gke.io/gcp-service-account" = var.dbt_service_account_email
     }
   }
+  depends_on = [kubernetes_namespace.dbt_namespace]
+  
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Bind the DBT service account to the Kubernetes service account
@@ -118,14 +123,14 @@ resource "kubernetes_namespace" "dbt_namespace" {
   metadata {
     name = var.dbt_namespace
   }
+
+  timeouts {
+    delete = "10m" 
+  }
+  
   depends_on = [
     google_secret_manager_secret_version.dbt_profiles_version
   ]
-  # Ajoute ce bloc pour ignorer les échecs de suppression
-  lifecycle {
-    prevent_destroy = false
-    ignore_changes = [all]
-  }
 }
 
 # CSI Secret Store Driver
@@ -138,6 +143,10 @@ resource "kubernetes_secret" "dbt_config" {
     "profiles.yml" = base64encode(google_secret_manager_secret_version.dbt_profiles_version.secret_data)
   }
   type = "Opaque"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "kubernetes_network_policy" "dbt_network_policy" {
@@ -166,6 +175,8 @@ resource "kubernetes_network_policy" "dbt_network_policy" {
       }
     }
   }
+
+  depends_on = [kubernetes_namespace.dbt_namespace]
 }
 
 # ----------------- Configuration for DBT Deployment ---------------------
