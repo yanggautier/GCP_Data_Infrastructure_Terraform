@@ -118,6 +118,11 @@ resource "kubernetes_namespace" "dbt_namespace" {
   metadata {
     name = var.dbt_namespace
   }
+    depends_on = [
+    kubernetes_service_account.dbt_k8s_sa,
+    kubernetes_secret.dbt_config,
+    kubernetes_network_policy.dbt_network_policy,
+  ]
 }
 
 # CSI Secret Store Driver
