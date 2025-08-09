@@ -1,6 +1,6 @@
 output "bucket_name" {
   description = "Name of the main DVD rental GCS bucket."
-  value       = module.storage.dvd_rental_bucket_name
+  value       = module.storage.data_bucket_name
 }
 
 output "cloud_sql_private_ip" {
