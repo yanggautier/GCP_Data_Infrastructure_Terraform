@@ -118,11 +118,14 @@ resource "kubernetes_namespace" "dbt_namespace" {
   metadata {
     name = var.dbt_namespace
   }
-    depends_on = [
-    kubernetes_service_account.dbt_k8s_sa,
-    kubernetes_secret.dbt_config,
-    kubernetes_network_policy.dbt_network_policy,
+  depends_on = [
+    google_secret_manager_secret_version.dbt_profiles_version
   ]
+  # Ajoute ce bloc pour ignorer les échecs de suppression
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = [all]
+  }
 }
 
 # CSI Secret Store Driver

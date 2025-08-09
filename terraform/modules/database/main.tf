@@ -73,6 +73,10 @@ resource "google_sql_user" "dvd_rental_user" {
   name     = var.database_user_name
   instance = google_sql_database_instance.dvd_rental_sql_postgresql.name
   password = data.google_secret_manager_secret_version.db_password_secret.secret_data
+
+  depends_on = [ 
+    google_sql_database_instance.dvd_rental_sql_postgresql,
+    google_sql_database.dvd_rental_db ]
 }
 
 resource "random_string" "postgres_password_gen" {

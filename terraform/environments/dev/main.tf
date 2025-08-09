@@ -157,6 +157,24 @@ module "bigquery" {
   depends_on = [google_project_service.apis, google_service_account.dbt_sa]
 }
 
+
+module "datastream_stream" {
+  source                                = "../../modules/datastream-stream"
+  project_id                            = var.project_id
+  region                                = var.region
+  environment                           = var.environment
+  bigquery_bronze_dataset_id            = module.bigquery.bigquery_bronze_dataset_id
+  source_connection_profile_object      = module.datastream_core.datastream_source_connection_profile_object
+  destination_connection_profile_object = module.datastream_core.datastream_destination_connection_profile_object
+
+  depends_on = [
+    google_project_service.apis,
+    module.datastream_core,
+    module.database.datastream_setup,
+    module.database.postgresql_setup_completed
+  ]
+}
+
 # Create a GKE Cluster Service Account
 resource "google_service_account" "gke_node_service_account" {
   account_id   = "gke-node-service-account"
@@ -170,7 +188,6 @@ resource "google_project_iam_member" "cluster_admin_role" {
   role    = "roles/container.admin"
   member  = "serviceAccount:${google_service_account.gke_node_service_account.email}"
 }
-
 
 # Cluster GKE
 resource "google_container_cluster" "dbt_cluster" {
@@ -247,22 +264,5 @@ module "orchestration" {
     module.networking,
     google_service_account.dbt_sa,
     google_container_cluster.dbt_cluster
-  ]
-}
-
-module "datastream_stream" {
-  source                                = "../../modules/datastream-stream"
-  project_id                            = var.project_id
-  region                                = var.region
-  environment                           = var.environment
-  bigquery_bronze_dataset_id            = module.bigquery.bigquery_bronze_dataset_id
-  source_connection_profile_object      = module.datastream_core.datastream_source_connection_profile_object
-  destination_connection_profile_object = module.datastream_core.datastream_destination_connection_profile_object
-
-  depends_on = [
-    google_project_service.apis,
-    module.datastream_core,
-    module.database.datastream_setup,
-    module.database.postgresql_setup_completed
   ]
 }
