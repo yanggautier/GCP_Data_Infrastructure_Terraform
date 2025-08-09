@@ -1,6 +1,6 @@
 # Crée un bucket Google Cloud Storage pour les données DVD Rental
 resource "google_storage_bucket" "data-bucket" {
-  name                        = "dvd-rental-bucket-${var.environment}-${random_id.bucket_suffix.hex}"
+  name                        = "data-bucket-${var.environment}-${random_id.bucket_suffix.hex}"
   location                    = var.region
   storage_class               = "STANDARD"
   force_destroy               = true

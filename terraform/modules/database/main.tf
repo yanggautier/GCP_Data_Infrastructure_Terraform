@@ -6,7 +6,7 @@ data "google_secret_manager_secret_version" "db_password_secret" {
 
 resource "google_sql_database_instance" "dvd_rental_sql_postgresql" {
   project         = var.project_id
-  name            = "dvd-rental-${var.environment}-instance"
+  name            = "sql-${var.environment}-instance"
   region          = var.region
   database_version = "POSTGRES_15"
 
