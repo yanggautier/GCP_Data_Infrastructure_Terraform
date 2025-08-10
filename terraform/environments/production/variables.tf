@@ -1,8 +1,6 @@
-# Inclut les variables globales du répertoire partagé
-# Note: Dans un vrai projet, ces variables seraient définies dans le fichier commun
-# et utilisées ici, ou overridees si nécessaire. Pour cet exemple, je les redéfinis pour la clarté.
+# Terraform variables for the dev environment
 variable "project_id" {
-  description = "DVD Project ID"
+  description = "Project ID"
   type        = string
   default     = "dbt-project-dvd-rent-464116"
 }
@@ -10,13 +8,7 @@ variable "project_id" {
 variable "region" {
   description = "GCP region for resources"
   type        = string
-  default     = "europe-west9"
-}
-
-variable "state_file_bucket" {
-  description = "Bucker for state files"
-  type = string
-  default = "state-files-prod" 
+  default     = "us-central1"
 }
 
 variable "environment" {
@@ -25,84 +17,158 @@ variable "environment" {
   default     = "prod"
 }
 
+# ------------- Settings for Database ----------------------
 variable "database_name" {
   description = "Name of the Cloud SQL database"
   type        = string
-  default     = "dvd_rental_db"
+  default     = "my_db"
 }
 
 variable "database_user_name" {
   description = "Cloud SQL user "
   type        = string
-  default     = "dvd_rental_user"
+  default     = "db_user"
 }
 
+# ------------- Settings for BigQuery IAM ----------------------
 variable "bigquery_owner_user" {
   description = "Email for the owner of the BigQuery dataset"
   type        = string
-  default     = "yangguole@outlook.com"
 }
 
 variable "bigquery_analyst_user" {
   description = "Email of the BigQuery analyst user"
   type        = string
-  default     = "inmoglio@gmail.com"
 }
 
 variable "bigquery_contributor_user" {
   description = "Email of the BigQuery contributor user"
   type        = string
-  default     = "guoleyang@gmail.com"
 }
 
-variable "subnetwork_address" {
+
+# ------------- Settings for Networking ----------------------
+# Subnetwork for Datastream
+variable "datastream_subnetwork_address" {
   description = "CIDR range for the subnetwork"
   type        = string
   default     = "10.2.0.0/24"
 }
 
+# SUbnetwork for the dbt GKE cluster
+variable "gke_subnetwork_address" {
+  description = "CIDR range for the subnetwork"
+  type        = string
+  default     = "10.4.0.0/24"
+}
+
+variable "datastream_private_connection_subnet" {
+  description = "Subnet of private connection for peering"
+  type        = string
+  default     = "10.200.0.0/24"
+}
+
+
+# ------------- Settings for Secret Manager ----------------------
+# Secret name for the Cloud SQL database password in Secret Manager
 variable "db_password_secret_name" {
   description = "Secret name form Secret Manager"
   type        = string
   default     = "postgres-instance-password"
 }
 
-# Ceci est un exemple pour inclure les locals partagés
-# Dans un environnement réel, vous pourriez les gérer via un fichier `backend.tf`
-# ou en les passant en tant que variables. Pour l'exemple, nous allons les redéfinir
-# comme une source locale pour les modules qui en ont besoin.
-locals {
-  env_config = {
-    dev = {
-      instance_tier         = "db-f1-micro"
-      disk_size             = 20
-      backup_enabled        = false
-      deletion_protection   = false
-      max_replication_slots = 10
-      max_wal_senders       = 10
-    }
-    staging = {
-      instance_tier         = "db-custom-1-3840"
-      disk_size             = 50
-      backup_enabled        = true
-      deletion_protection   = false
-      max_replication_slots = 50
-      max_wal_senders       = 50
-    }
-    prod = {
-      instance_tier         = "db-custom-2-4096"
-      disk_size             = 100
-      backup_enabled        = true
-      deletion_protection   = true
-      max_replication_slots = 100
-      max_wal_senders       = 100
-    }
-  }
-  current_env = local.env_config[var.environment]
-}
-
+# Secret version for the Cloud SQL database password in Secret Manager
 variable "secret_version" {
   description = "Version of secret in Secret Manager"
-  type = number
-  default = 1
+  type        = number
+  default     = 1
+}
+
+# ------------- Settings for GKE ----------------------
+# Secondary subnet used for GKE Pods (Alias IP ranges)
+variable "gke_secondary_pod_range" {
+  description = "Secondary IP range for GKE pods"
+  type        = string
+  default     = "10.10.0.0/16"
+}
+
+# Secondary subnet used for GKE Services (Alias IP ranges)
+variable "gke_secondary_service_range" {
+  description = "Secondary IP range for GKE services"
+  type        = string
+  default     = "10.20.0.0/20"
+}
+
+variable "cluster_deletion_protection" {
+  description = "Enable deletion protection for the GKE cluster"
+  type        = bool
+  default     = false
+}
+
+variable "gke_master_ipv4_cidr_block" {
+  description = "CIDR block for the GKE master IP."
+  type        = string
+  default     = "172.16.0.0/28"
+}
+
+# ------------- Setting for Cloud Composer ----------------------
+# Cloud Composer variables
+variable "cloud_composer_size" {
+  description = "Size of the Cloud Composer environment."
+  type        = string
+  default     = "ENVIRONMENT_SIZE_SMALL"
+}
+
+variable "cloud_composer_scheduler_cpu" {
+  description = "CPU count for the Cloud Composer scheduler."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_scheduler_memory_gb" {
+  description = "Memory in GB for the Cloud Composer scheduler."
+  type        = number
+  default     = 2
+}
+
+variable "cloud_composer_scheduler_storage_gb" {
+  description = "Storage in GB for the Cloud Composer scheduler."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_webserver_cpu" {
+  description = "CPU count for the Cloud Composer web server."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_websever_memory_gb" {
+  description = "Memory in GB for the Cloud Composer web server."
+  type        = number
+  default     = 2
+}
+
+variable "cloud_composer_webserver_storage_gb" {
+  description = "Storage in GB for the Cloud Composer web server."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_worker_cpu" {
+  description = "CPU count for the Cloud Composer worker."
+  type        = number
+  default     = 1
+}
+
+variable "cloud_composer_worker_memory_gb" {
+  description = "Memory in GB for the Cloud Composer worker."
+  type        = number
+  default     = 2
+}
+
+variable "cloud_composer_worker_storage_gb" {
+  description = "Storage in GB for the Cloud Composer worker."
+  type        = number
+  default     = 10
 }

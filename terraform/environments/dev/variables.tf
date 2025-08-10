@@ -1,6 +1,6 @@
 # Terraform variables for the dev environment
 variable "project_id" {
-  description = "DVD Project ID"
+  description = "Project ID"
   type        = string
   default     = "dbt-project-dvd-rent-464116"
 }
@@ -21,13 +21,13 @@ variable "environment" {
 variable "database_name" {
   description = "Name of the Cloud SQL database"
   type        = string
-  default     = "dvd_rental_db"
+  default     = "my_db"
 }
 
 variable "database_user_name" {
   description = "Cloud SQL user "
   type        = string
-  default     = "dvd_rental_user"
+  default     = "db_user"
 }
 
 # ------------- Settings for BigQuery IAM ----------------------

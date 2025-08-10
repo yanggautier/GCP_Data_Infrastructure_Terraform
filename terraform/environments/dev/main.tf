@@ -222,6 +222,12 @@ resource "google_container_cluster" "dbt_cluster" {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
+
   # Enable deletion protection for the GKE cluster
   deletion_protection = var.cluster_deletion_protection
 }

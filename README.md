@@ -128,3 +128,22 @@ Show detail of a specific resource
 ```bash
 terraform state show resouce_type.resource_name
 ```
+
+
+## Commands for Kubernetes
+```bash
+#Connect to cluster
+gcloud container clusters get-credentials dbt-cluster-<environment> --region <region> --project <project-id>
+
+# Check cluster namaspace state
+kubectl get namespace dbt -o yaml
+
+# Delete all namespace finalizers
+kubectl patch namespace dbt -p '{"metadata":{"finalizers":[]}}' --type=merge
+
+# Or directly delete the namespace to remove all finalizers
+kubectl edit namespace dbt
+
+# Force the delete
+kubectl delete namespace dbt --force --grace-period=0 --timeout=30s
+```
