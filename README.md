@@ -70,9 +70,46 @@ gcloud auth application-default login
 
 13. Rerun the Cloudbuild trigger
 
-14. Import data in the GCS
+14. Import data in the Cloud SQL
+    a. Download the dump of dvd_rental
+    ```bash
+        wget https://www.postgresqltutorial.com/wp-content/uploads/2019/05/dvdrental.zip
+        unzip dvdrental.zip
+    ```
 
-15. And load 
+    b. Install postgresql utils
+    ```bash
+        sudo apt update
+        sudo apt install postgresql-client
+    ```
+
+    c. Intall cloud-sql-proxy
+    ```bash
+        curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64
+        chmod +x cloud_sql_proxy
+    ```
+
+    d. Launch proxy in first terminal
+    ```bash
+    ./cloud_sql_proxy -instances=<PROJECT_ID>:<REGION>:<INSTANCE_NAME>=tcp:5432
+    ```
+
+    e. In second terminal run 
+    ```bash
+        pg_restore \
+            -h 127.0.0.1 \
+            -p 5432 \
+            -U dvd_rental_user \
+            -d dvd_rental_db   \
+            --verbose   \
+            --no-owner  \
+            --no-privileges   \
+            --no-acl   \
+            --clean   \
+            --if-exists   \
+            dvdrental.tar
+    ```
+15. Build a customer DBT image and push to github, then Cloud Build will update with new DBT image
 
 16. Create a Cloudbuild trigger to clean all resources and run the trigger
 
