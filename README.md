@@ -167,7 +167,7 @@ terraform state show resouce_type.resource_name
 ```
 
 
-## Commands for Kubernetes
+## Commands for Kubernetes to delete dbt namespace
 ```bash
 #Connect to cluster
 gcloud container clusters get-credentials dbt-cluster-<environment> --region <region> --project <project-id>
