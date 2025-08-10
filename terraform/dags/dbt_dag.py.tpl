@@ -4,30 +4,45 @@ import pendulum
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from airflow import DAG
 
+# Variables injected by Terraform
 DBT_K8S_SERVICE_ACCOUNT_NAME = "{{ dbt_k8s_sa_name }}"
 DBT_NAMESPACE = "{{ dbt_namespace }}"
 
+# Default Configuration
+default_args = {
+    'owner': 'data-team',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': pendulum.duration(minutes=5),
+}
+
 with DAG(
-    dag_id="dbt_run_dag", 
+    dag_id="dbt_run_dag",
+    default_args=default_args,
+    description="DBT pipeline running on GKE",
     schedule_interval="@daily", 
     start_date=pendulum.datetime(2025, 8, 1, tz="UTC"),
-    schedule=None,
     catchup=False,
-    tags=["dbt", "kubernetes"]
-    ) as dag:
-    run_dbt_models = KubernetesPodOperator(
-        task_id="run_dbt_models",
-        name="dbt-run-pod",
+    tags=["dbt", "kubernetes", "bigquery"]
+) as dag:
+
+    # Task to compile DBT models
+    compile_dbt_models = KubernetesPodOperator(
+        task_id="compile_dbt_models",
+        name="dbt-compile-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="ghcr.io/dbt-labs/dbt-bigquery:latest"",  # Use this default image at start, then replace with your DBT custom image
+        image="europe-west1-docker.pkg.dev/YOUR_PROJECT_ID/dbt-repo-dev/dbt:latest",
         cmds=["dbt"],
-        arguments=["run", "--profiles-dir", "/opt/dbt/profiles"],
-
+        arguments=["compile", "--profiles-dir", "/app/profiles"],
+        
+        # Configuration of volume_mounts
         volume_mounts=[
             {
                 "name": "dbt-profiles",
-                "mount_path": "/opt/dbt/profiles",
+                "mount_path": "/app/profiles",
                 "read_only": True
             }
         ],
@@ -39,4 +54,148 @@ with DAG(
                 }
             }
         ],
+        
+        # Security with Terraform
+        security_context={
+            "runAsNonRoot": True,
+            "runAsUser": 1000,
+            "fsGroup": 2000
+        },
+        container_security_context={
+            "allowPrivilegeEscalation": False,
+            "readOnlyRootFilesystem": True,
+            "capabilities": {
+                "drop": ["ALL"]
+            }
+        },
+        
+        # Resources configuration 
+        resources={
+            "requests": {
+                "memory": "512Mi",
+                "cpu": "250m"
+            },
+            "limits": {
+                "memory": "1Gi",
+                "cpu": "500m"
+            }
+        },
+        
+        # Automatic clean of pod
+        is_delete_operator_pod=True,
+        get_logs=True,
+        log_events_on_failure=True,
     )
+
+    # Task to execute DBT models
+    run_dbt_models = KubernetesPodOperator(
+        task_id="run_dbt_models",
+        name="dbt-run-pod",
+        namespace=DBT_NAMESPACE,
+        service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
+        image="europe-west1-docker.pkg.dev/YOUR_PROJECT_ID/dbt-repo-dev/dbt:latest",
+        cmds=["dbt"],
+        arguments=["run", "--profiles-dir", "/app/profiles"],
+        
+        volume_mounts=[
+            {
+                "name": "dbt-profiles",
+                "mount_path": "/app/profiles",
+                "read_only": True
+            }
+        ],
+        volumes=[
+            {
+                "name": "dbt-profiles",
+                "secret": {
+                    "secretName": "dbt-config"
+                }
+            }
+        ],
+        
+        security_context={
+            "runAsNonRoot": True,
+            "runAsUser": 1000,
+            "fsGroup": 2000
+        },
+        container_security_context={
+            "allowPrivilegeEscalation": False,
+            "readOnlyRootFilesystem": True,
+            "capabilities": {
+                "drop": ["ALL"]
+            }
+        },
+        
+        resources={
+            "requests": {
+                "memory": "512Mi", 
+                "cpu": "250m"
+            },
+            "limits": {
+                "memory": "2Gi",
+                "cpu": "1000m"
+            }
+        },
+        
+        is_delete_operator_pod=True,
+        get_logs=True,
+        log_events_on_failure=True,
+    )
+
+    # Task to test DBT models
+    test_dbt_models = KubernetesPodOperator(
+        task_id="test_dbt_models",
+        name="dbt-test-pod",
+        namespace=DBT_NAMESPACE,
+        service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
+        image="europe-west1-docker.pkg.dev/YOUR_PROJECT_ID/dbt-repo-dev/dbt:latest",
+        cmds=["dbt"],
+        arguments=["test", "--profiles-dir", "/app/profiles"],
+        
+        volume_mounts=[
+            {
+                "name": "dbt-profiles",
+                "mount_path": "/app/profiles", 
+                "read_only": True
+            }
+        ],
+        volumes=[
+            {
+                "name": "dbt-profiles",
+                "secret": {
+                    "secretName": "dbt-config"
+                }
+            }
+        ],
+        
+        security_context={
+            "runAsNonRoot": True,
+            "runAsUser": 1000,
+            "fsGroup": 2000
+        },
+        container_security_context={
+            "allowPrivilegeEscalation": False,
+            "readOnlyRootFilesystem": True,
+            "capabilities": {
+                "drop": ["ALL"]
+            }
+        },
+        
+        resources={
+            "requests": {
+                "memory": "256Mi",
+                "cpu": "125m"
+            },
+            "limits": {
+                "memory": "512Mi",
+                "cpu": "250m"
+            }
+        },
+        
+        is_delete_operator_pod=True,
+        get_logs=True,
+        log_events_on_failure=True,
+    )
+
+    # Order of dependencies
+    compile_dbt_models >> run_dbt_models >> test_dbt_models
