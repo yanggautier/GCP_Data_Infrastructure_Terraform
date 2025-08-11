@@ -34,7 +34,7 @@ with DAG(
         name="dbt-compile-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="europe-west1-docker.pkg.dev/YOUR_PROJECT_ID/dbt-repo-dev/dbt:latest",
+        image="ghcr.io/dbt-labs/dbt:latest",
         cmds=["dbt"],
         arguments=["compile", "--profiles-dir", "/app/profiles"],
         
@@ -93,7 +93,7 @@ with DAG(
         name="dbt-run-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="europe-west1-docker.pkg.dev/YOUR_PROJECT_ID/dbt-repo-dev/dbt:latest",
+        image="ghcr.io/dbt-labs/dbt-bigquery:latest",
         cmds=["dbt"],
         arguments=["run", "--profiles-dir", "/app/profiles"],
         
@@ -148,7 +148,7 @@ with DAG(
         name="dbt-test-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="europe-west1-docker.pkg.dev/YOUR_PROJECT_ID/dbt-repo-dev/dbt:latest",
+        image="ghcr.io/dbt-labs/dbt-bigquery:latest",
         cmds=["dbt"],
         arguments=["test", "--profiles-dir", "/app/profiles"],
         
