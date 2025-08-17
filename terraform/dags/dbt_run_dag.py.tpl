@@ -111,7 +111,7 @@ with DAG(
         name="dbt-run-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}"
+        image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}",
         cmds=["dbt"],
         arguments=["run", "--profiles-dir", "/app/profiles"],
         
