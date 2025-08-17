@@ -2,11 +2,14 @@ from __future__ import annotations
 import pendulum
 
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.operators.bash import BashOperator
 from airflow import DAG
 
 # Variables injected by Terraform
 DBT_K8S_SERVICE_ACCOUNT_NAME = "{{ dbt_k8s_sa_name }}"
 DBT_NAMESPACE = "{{ dbt_namespace }}"
+DBT_DEFAULT_IMAGE = "{{ dbt_default_image }}"
+DBT_CUSTOM_IMAGE = "{{ dbt_custom_image }}"
 
 # Default Configuration
 default_args = {
@@ -26,7 +29,22 @@ with DAG(
     start_date=pendulum.datetime(2025, 8, 1, tz="UTC"),
     catchup=False,
     tags=["dbt", "kubernetes", "bigquery"]
-) as dag:
+) as dag: 
+
+    # Check which dbt image to use
+    determine_dbt_image_task = BashOperator(
+        task_id="determine_dbt_image",
+        bash_command=f"""
+            if gcloud artifacts docker images describe {DBT_CUSTOM_IMAGE} >/dev/null 2>&1; then
+                echo "{DBT_CUSTOM_IMAGE}"
+            else
+                echo "{DBT_DEFAULT_IMAGE}"
+            fi
+        """,
+        do_xcom_push=True,
+        get_logs=True,
+        log_events_on_failure=True
+    )
 
     # Task to compile DBT models
     compile_dbt_models = KubernetesPodOperator(
@@ -34,7 +52,7 @@ with DAG(
         name="dbt-compile-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="ghcr.io/dbt-labs/dbt:latest",
+        image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}"
         cmds=["dbt"],
         arguments=["compile", "--profiles-dir", "/app/profiles"],
         
@@ -93,7 +111,7 @@ with DAG(
         name="dbt-run-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="ghcr.io/dbt-labs/dbt-bigquery:latest",
+        image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}"
         cmds=["dbt"],
         arguments=["run", "--profiles-dir", "/app/profiles"],
         
@@ -198,4 +216,4 @@ with DAG(
     )
 
     # Order of dependencies
-    compile_dbt_models >> run_dbt_models >> test_dbt_models
+    determine_dbt_image_task >> compile_dbt_models >> run_dbt_models >> test_dbt_models
