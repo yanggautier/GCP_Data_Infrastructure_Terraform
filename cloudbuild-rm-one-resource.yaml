@@ -7,12 +7,8 @@ steps:
       - 'destroy'
       - '-auto-approve'
       - '-target=${_RESOURCE_TARGET}'
-    dir: 'terraform/environments/${_ENV}'
+    dir: 'terraform/environments/${_ENVIRONMENT}'
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
-substitutions:
-  _ENV: dev
-
 
