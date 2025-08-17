@@ -1,14 +1,29 @@
+
 steps:
-  # Remove a specific resource from the Terraform state
+  - id: 'terraform-init'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['init']
+    dir: 'terraform/environments/${_ENVIRONMENT}'
+
+  - id: 'terraform-validate'
+    name: 'hashicorp/terraform:1.11.4'
+    args: ['validate']
+    dir: 'terraform/environments/${_ENVIRONMENT}'
+    waitFor: ['terraform-init']
+
+  # Destry a specific resource
   - id: 'terraform-destroy-target'
-    name: 'hashicorp/terraform:latest'
-    entrypoint: 'terraform'
+    name: 'hashicorp/terraform:1.11.4'
     args:
       - 'destroy'
       - '-auto-approve'
       - '-target=${_RESOURCE_TARGET}'
     dir: 'terraform/environments/${_ENVIRONMENT}'
+    waitFor: ['terraform-validate']
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
+substitutions:
+  _ENVIRONMENT: 'dev'
+  _RESOURCE_TARGET: 'module.module_name.resource_type.resource_name' 
