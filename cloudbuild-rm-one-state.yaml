@@ -23,3 +23,4 @@ options:
 
 substitutions:
   _ENVIRONMENT: 'dev'
+  _RESOURCE_TARGET: 'module.module_name.resource_type.resource_name' 
