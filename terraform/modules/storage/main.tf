@@ -53,7 +53,3 @@ resource "google_storage_bucket" "dbt-doc-bucket" {
     enabled = false
   }
 }
-
-resource "random_id" "dbt_bucket_suffix" {
-  byte_length = 4
-}
