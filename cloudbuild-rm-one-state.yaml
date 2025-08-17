@@ -1,37 +1,17 @@
 
 steps:
-  - id: 'terraform-init'
-    name: 'hashicorp/terraform:1.11.4'
-    args: ['init']
-    dir: 'terraform/environments/dev'
-
-  - id: 'terraform-validate'
-    name: 'hashicorp/terraform:1.11.4'
-    args: ['validate']
-    dir: 'terraform/environments/dev'
-    waitFor: ['terraform-init']
-
   # Remove a specific resource
-  - id: 'terraform-rm-one-state'
-    name: 'hashicorp/terraform:1.11.4'
-    args: ['state', 'rm', '${_RESOURCE_TARGET}']
-    dir: 'terraform/environments/dev'
-    waitFor: ['terraform-validate']
+  - id: 'terraform-destroy-target'
+    name: 'hashicorp/terraform:latest'
+    entrypoint: 'terraform'
+    args:
+      - 'destroy'
+      - '-auto-approve'
+      - '-target=${_RESOURCE_TARGET}'
+     dir: 'terraform/environments/${_ENV}' 
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _PROJECT_ID: 'dbt-project-dvd-rent-464116'
-  _REGION: 'us-central1'
-  _ENVIRONMENT: 'dev'
-  _SUBNETWORK_ADDRESS: '10.0.0.0/24'
-  _DATABASE_NAME: 'dvd_rental_db'
-  _DATABASE_USER_NAME: 'datastream_user'
-  _DB_PASSWORD_SECRET_NAME: 'your-db-password-secret'
-  _BIGQUERY_OWNER_USER: 'user-owner@example.com'
-  _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
-  _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
-  _VPC_NETWORK_NAME: 'datastream-vpc'
-  _STATE_FILE_BUCKET: 'state-files-dev'
-  _SECRET_VERSION: '1'
+  _ENV: dev
