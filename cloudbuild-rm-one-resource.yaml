@@ -19,6 +19,10 @@ steps:
       - '-auto-approve'
       - '-target=${_RESOURCE_TARGET}'
     dir: 'terraform/environments/${_ENVIRONMENT}'
+    env:
+      - 'TF_VAR_bigquery_owner_user=${_BIGQUERY_OWNER_USER}'
+      - 'TF_VAR_bigquery_analyst_user=${_BIGQUERY_ANALYST_USER}'
+      - 'TF_VAR_bigquery_contributor_user=${_BIGQUERY_CONTRIBUTOR_USER}'
     waitFor: ['terraform-validate']
 
 options:
