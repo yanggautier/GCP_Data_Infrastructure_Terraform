@@ -27,3 +27,6 @@ options:
 substitutions:
   _ENVIRONMENT: 'dev'
   _RESOURCE_TARGET: 'module.module_name.resource_type.resource_name' 
+  _BIGQUERY_OWNER_USER: 'user-owner@example.com'
+  _BIGQUERY_ANALYST_USER: 'user-analyst@example.com'
+  _BIGQUERY_CONTRIBUTOR_USER: 'user-contributor@example.com'
