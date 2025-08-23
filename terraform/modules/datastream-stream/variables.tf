@@ -1,5 +1,4 @@
-# terraform/modules/datastream-stream/variables.tf
-
+# ---------------------------------- Project level variables ------------------------------
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
@@ -15,23 +14,22 @@ variable "environment" {
   type        = string
 }
 
-# Les objets des profils de connexion sont passés ici
+# ---------------------------------- Datastream configuration variables ------------------------------
 variable "source_connection_profile_object" {
   description = "The Datastream source connection profile object from datastream-core module."
-  type        = object({
+  type = object({
     id = string
-    # Ajoutez d'autres attributs si vous en avez besoin, par exemple 'name', 'location', etc.
-    # Assurez-vous que ces attributs sont bien des outputs du module datastream-core
   })
 }
 
 variable "destination_connection_profile_object" {
   description = "The Datastream destination connection profile object from datastream-core module."
-  type        = object({
+  type = object({
     id = string
   })
 }
 
+# ---------------------------------- BigQuey variables ------------------------------
 variable "bigquery_bronze_dataset_id" {
   description = "ID of the BigQuery dataset where data will be streamed."
   type        = string

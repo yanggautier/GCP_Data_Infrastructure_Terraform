@@ -1,38 +1,43 @@
+# Service account for Datastream
 resource "google_service_account" "datastream_service_account" {
-  account_id   = "datastream-service-account"
+  account_id   = "datastream-service-account-${var.environment}"
   display_name = "Datastream Service Account"
   project      = var.project_id
 }
 
+# Datastream admin IAM member for Service Account
 resource "google_project_iam_member" "datastream_admin" {
   project = var.project_id
   role    = "roles/datastream.admin"
   member  = "serviceAccount:${google_service_account.datastream_service_account.email}"
 }
 
+# BigQuery data editor IAM member for Service Account
 resource "google_project_iam_member" "bigquery_data_editor" {
   project = var.project_id
   role    = "roles/bigquery.dataEditor"
   member  = "serviceAccount:${google_service_account.datastream_service_account.email}"
 }
 
+# Cloud SQL Client IAM member for Service Account
 resource "google_project_iam_member" "cloud_sql_client" {
   project = var.project_id
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.datastream_service_account.email}"
 }
 
+# Access Secret Manger IAM member for Service Account to get secret in Secret Manager
 resource "google_project_iam_member" "access_secret_manager" {
   project = var.project_id
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:${google_service_account.datastream_service_account.email}"
 }
 
-# Crée une connexion privée Datastream
+# Create a private connection for Datastream
 resource "google_datastream_private_connection" "private_connection" {
-  display_name        = "Datastream Private Connection"
-  project             = var.project_id
-  location            = var.region
+  display_name          = "Datastream Private Connection"
+  project               = var.project_id
+  location              = var.region
   private_connection_id = "datastream-connection-${var.environment}"
 
   vpc_peering_config {
@@ -41,7 +46,7 @@ resource "google_datastream_private_connection" "private_connection" {
   }
 
   depends_on = [
-    var.private_vpc_connection_id 
+    var.private_vpc_connection_id
   ]
 
   timeouts {
@@ -74,7 +79,7 @@ resource "google_compute_instance" "datastream_proxy" {
   network_interface {
     network    = var.vpc_id
     subnetwork = var.datastream_subnet_id
-    
+
     # No external IP needed
   }
 
@@ -123,10 +128,10 @@ EOL
 
 # Firewall rule for SQL proxy
 resource "google_compute_firewall" "allow_datastream_to_proxy" {
-  name    = "allow-datastream-to-proxy"
+  name    = "allow-datastream-to-proxy-${var.environment}"
   network = var.vpc_id
   project = var.project_id
-  
+
   allow {
     protocol = "tcp"
     ports    = ["5432"]
@@ -142,10 +147,11 @@ resource "google_compute_firewall" "allow_datastream_to_proxy" {
 }
 
 
+# Source conenction profile of Datastream
 resource "google_datastream_connection_profile" "source" {
-  display_name        = "PostgreSQL Source Connection Profile"
-  project             = var.project_id
-  location            = var.region
+  display_name          = "PostgreSQL Source Connection Profile"
+  project               = var.project_id
+  location              = var.region
   connection_profile_id = "postgresql-source-${var.environment}"
 
   postgresql_profile {
@@ -170,10 +176,11 @@ resource "google_datastream_connection_profile" "source" {
   ]
 }
 
+# Destination conenction profile of Datastream
 resource "google_datastream_connection_profile" "destination" {
-  display_name        = "BigQuery Destination Connection Profile"
-  project             = var.project_id
-  location            = var.region
+  display_name          = "BigQuery Destination Connection Profile"
+  project               = var.project_id
+  location              = var.region
   connection_profile_id = "bigquery-destination-${var.environment}"
 
   bigquery_profile {}

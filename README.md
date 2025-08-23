@@ -60,17 +60,19 @@ gcloud auth application-default login
 
 8. Set all variables in 'terraform.tfvars' file of environment path or replace in `variables.tf`
 
-9. Create a Cloud Build with name "private-pool" in public network (this allow terraform first time, it's normalement to get an error)
+9. Create a storage account to stocket Terraform state files, and prevent to delete
 
-10. Create a Cloudbuild trigger, and set the path of cloudbuild.yaml and variables
+10. Create a Cloud Build with name "private-pool" in public network (this allow terraform first time, it's normalement to get an error)
 
-11. Run the Cloudbuild trigger
+11. Create a Cloudbuild trigger, and set the path of cloudbuild.yaml and variables
 
-12. Delete the "private-pool" and recreate a "private pool" in private network with get address in private-ip-alloc-cb which is a address allocate in vpc 
+12. Run the Cloudbuild trigger
 
-13. Rerun the Cloudbuild trigger
+13. Delete the "private-pool" and recreate a "private pool" in private network with get address in private-ip-alloc-cb which is a address allocate in vpc 
 
-14. Import data in the Cloud SQL
+14. Rerun the Cloudbuild trigger
+
+15. Import data in the Cloud SQL
     a. Download the dump of dvd_rental
     ```bash
         wget https://www.postgresqltutorial.com/wp-content/uploads/2019/05/dvdrental.zip
@@ -109,12 +111,12 @@ gcloud auth application-default login
             --if-exists   \
             dvdrental.tar
     ```
-15. Build a customer DBT image and push to github, then Cloud Build will update with new DBT image
+16. Build a customer DBT image and push to github, then Cloud Build will update with new DBT image
 
-16. Create a Cloudbuild trigger to clean all resources and run the trigger
+17. Create a Cloudbuild trigger to clean all resources and run the trigger
 
 
-## Terraform Commands
+## Usefull Terraform Commands
 
 Initiate Terraform
 ```bash
@@ -167,7 +169,7 @@ terraform state show resouce_type.resource_name
 ```
 
 
-## Commands for Kubernetes to delete dbt namespace
+## Commands for Kubernetes to delete dbt namespace when it can not be deleted
 ```bash
 #Connect to cluster
 gcloud container clusters get-credentials dbt-cluster-<environment> --region <region> --project <project-id>

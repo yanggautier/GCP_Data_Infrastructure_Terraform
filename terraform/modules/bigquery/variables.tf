@@ -33,7 +33,7 @@ variable "datastream_service_account_email" {
   type        = string
 }
 
-variable "dbt_service_account_email" {
-  description = "Email of the DBT service account."
+variable "kubernetes_service_account_email" {
+  description = "Email of the Kubernestes service account to be used in DBT."
   type        = string
 }

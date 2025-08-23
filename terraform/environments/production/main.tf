@@ -191,9 +191,9 @@ resource "google_project_iam_member" "cluster_admin_role" {
 
 # Cluster GKE
 resource "google_container_cluster" "dbt_cluster" {
-  name       = "dbt-cluster-${var.environment}"
-  location   = var.region
-  project    = var.project_id
+  name     = "dbt-cluster-${var.environment}"
+  location = var.region
+  project  = var.project_id
 
   network    = module.networking.vpc_id
   subnetwork = module.networking.gke_subnet_id
@@ -231,7 +231,7 @@ data "google_client_config" "default" {}
 provider "kubernetes" {
   host                   = "https://${google_container_cluster.dbt_cluster.endpoint}"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate) 
+  cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate)
 }
 
 

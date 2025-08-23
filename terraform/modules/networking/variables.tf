@@ -1,3 +1,4 @@
+# ---------------------------------- Project level variables ------------------------------
 variable "project_id" {
   description = "The GCP project ID."
   type        = string
@@ -13,11 +14,13 @@ variable "environment" {
   type        = string
 }
 
+# ---------------------------------- Datastream configuration variables ------------------------------
 variable "datastream_subnetwork_address" {
   description = "CIDR range for the subnetwork"
   type        = string
 }
 
+# ---------------------------------- GKE configuration variables ------------------------------
 variable "gke_subnetwork_address" {
   description = "CIDR range for the dbt gke clustor subnetwork"
   type        = string
@@ -32,9 +35,3 @@ variable "gke_secondary_service_range" {
   description = "Secondary IP range for GKE services"
   type        = string
 }
-/*
-variable "datastream_service_account_email" {
-  description = "Email of the Datastream service account."
-  type        = string
-}
-*/

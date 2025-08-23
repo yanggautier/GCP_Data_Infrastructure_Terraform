@@ -1,3 +1,4 @@
+# ---------------------------------- Project level variables ------------------------------
 variable "project_id" {
   description = "The GCP project ID."
   type        = string
@@ -13,9 +14,10 @@ variable "environment" {
   type        = string
 }
 
+# ---------------------------------- Newtworking configuration variables ------------------------------
 variable "vpc_id" {
   description = "ID of the VPC network."
-  type        = string   
+  type        = string
 }
 
 variable "dbt_namespace" {
@@ -24,12 +26,18 @@ variable "dbt_namespace" {
   default     = "dbt"
 }
 
-variable "gke_subnet_id" {
-  description = "ID of the subnetwork for the GKE cluster."
-  type        = string  
+variable "superset_namespace" {
+  description = "Namespace for Superset in GKE."
+  type        = string
+  default     = "superset"
 }
 
-# ------------------ Variables for GKE ----------------------
+variable "gke_subnet_id" {
+  description = "ID of the subnetwork for the GKE cluster."
+  type        = string
+}
+
+# ---------------------------------- GKE configuration variables ------------------------------
 variable "cluster_deletion_protection" {
   description = "Enable deletion protection for the GKE cluster"
   type        = bool
@@ -40,15 +48,15 @@ variable "gke_master_ipv4_cidr_block" {
   type        = string
 }
 
-variable "dbt_service_account_email" {
-  description = "Email of the DBT service account."
+variable "kubernetes_service_account_email" {
+  description = "Email of the Kubernetes service account."
   type        = string
 }
-variable "dbt_service_account_id" {
-  description = "ID of the DBT service account."
+variable "kubernetes_service_account_id" {
+  description = "ID of the Kubernetes service account."
   type        = string
 }
-# ------------- Variables for Cloud Composer ----------------
+# ---------------------------------- Cloud ComposerL variables ------------------------------
 variable "cloud_composer_version" {
   description = "Version of Cloud Composer to use."
   type        = string
@@ -115,8 +123,13 @@ variable "cloud_composer_worker_storage_gb" {
   default     = 10
 }
 
-# ------------------ Variables for BigQuery ------------------
+variable "admin_email" {
+  description = "Admin email for cloud composer dag run failure"
+  type        = string
+}
+
+# ---------------------------------- BigQuery variables ------------------------------
 variable "bigquery_bronze_dataset_id" {
   description = "ID of the BigQuery dataset."
-  type        = string  
+  type        = string
 }

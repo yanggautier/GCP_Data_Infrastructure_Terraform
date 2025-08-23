@@ -55,11 +55,11 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
   direction = "INGRESS"
   source_ranges = [
     var.datastream_subnetwork_address, # Datastream subnet
-    "10.3.0.0/24",        # Private connection subnet for Datastream
-    "169.254.0.0/16",     # Google internal networking
+    "10.3.0.0/24",                     # Private connection subnet for Datastream
+    "169.254.0.0/16",                  # Google internal networking
     "${google_compute_global_address.private_ip_alloc.address}/${google_compute_global_address.private_ip_alloc.prefix_length}",
   ]
-  priority    = 500
+  priority = 500
 }
 
 # Authorise services to access vpc subnetworks
@@ -78,13 +78,13 @@ resource "google_compute_firewall" "allow_internal" {
   allow {
     protocol = "icmp"
   }
-  direction   = "INGRESS"
+  direction = "INGRESS"
   // source_ranges = ["10.0.0.0/8"]
   source_ranges = [
-    var.gke_subnetwork_address, # GKE subnet
+    var.gke_subnetwork_address,        # GKE subnet
     var.datastream_subnetwork_address, # Datastream subnet
   ]
-  priority    = 65534
+  priority = 65534
 }
 
 # Add a second private IP allocation for Cloud Build Private Pool
@@ -95,17 +95,14 @@ resource "google_compute_global_address" "private_ip_alloc_cb" {
   address_type  = "INTERNAL"
   prefix_length = 16 # A /16 block is recommended for expandability
   network       = google_compute_network.vpc.id
-  # You can specify a specific address here if you want to control the range,
-  # but letting Google allocate it is generally fine if your VPC has space.
-  # address = "10.5.0.0" # Optional: If you want to force 10.5.0.0/16
 }
 
-# Crée une connexion de service privée pour Cloud SQL
+# Pricate VPC connection for Cloud SQL
 resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = google_compute_network.vpc.id
-  service                 = "servicenetworking.googleapis.com"
+  network = google_compute_network.vpc.id
+  service = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_alloc.name,
-                             google_compute_global_address.private_ip_alloc_cb.name]
+  google_compute_global_address.private_ip_alloc_cb.name]
   timeouts {
     create = "10m"
     delete = "10m"

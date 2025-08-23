@@ -10,6 +10,7 @@ DBT_K8S_SERVICE_ACCOUNT_NAME = "{{ dbt_k8s_sa_name }}"
 DBT_NAMESPACE = "{{ dbt_namespace }}"
 DBT_DEFAULT_IMAGE = "{{ dbt_default_image }}"
 DBT_CUSTOM_IMAGE = "{{ dbt_custom_image }}"
+FAILURE_EMAIL = "{{ admin_email }}"
 
 # Default Configuration
 default_args = {
@@ -25,8 +26,9 @@ with DAG(
     dag_id="dbt_run_dag",
     default_args=default_args,
     description="DBT pipeline running on GKE",
-    schedule_interval="@daily", 
+    schedule="* 2 * * *", 
     start_date=pendulum.datetime(2025, 8, 1, tz="UTC"),
+    email_on_failure=
     catchup=False,
     tags=["dbt", "kubernetes", "bigquery"]
 ) as dag: 

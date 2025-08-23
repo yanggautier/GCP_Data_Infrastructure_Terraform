@@ -1,3 +1,4 @@
+# ---------------------------------- Project level variables ------------------------------
 variable "project_id" {
   description = "The GCP project ID."
   type        = string
@@ -13,9 +14,10 @@ variable "environment" {
   type        = string
 }
 
+# ---------------------------------- Datastream configuration variables ------------------------------
 variable "datastream_private_connection_subnet" {
   description = "Subenet of private connection for peering"
-  type = string
+  type        = string
 }
 
 variable "vpc_id" {
@@ -25,7 +27,7 @@ variable "vpc_id" {
 
 variable "datastream_subnet_id" {
   description = "Datastream subnet id"
-  type = string
+  type        = string
 }
 
 variable "private_vpc_connection_id" {
@@ -33,11 +35,15 @@ variable "private_vpc_connection_id" {
   type        = string
 }
 
+variable "wait_for_sql_instance_id" {
+  description = "ID of the time_sleep resource waiting for SQL instance readiness."
+  type        = string
+}
+# ---------------------------------- Cloud SQL variables ------------------------------
 variable "cloud_sql_private_ip" {
   description = "The private IP address of the Cloud SQL instance."
   type        = string
 }
-
 
 variable "database_name" {
   description = "Name of the Cloud SQL database."
@@ -49,18 +55,14 @@ variable "database_user_name" {
   type        = string
 }
 
-variable "bigquery_bronze_dataset_id" {
-  description = "ID of the BigQuery source dataset."
-  type        = string
-}
-
-variable "wait_for_sql_instance_id" {
-  description = "ID of the time_sleep resource waiting for SQL instance readiness."
-  type        = string
-}
-
 variable "db_password_secret_name" {
   description = "Secret of Secret Manager."
+  type        = string
+}
+
+# ---------------------------------- BigQuery variables ------------------------------
+variable "bigquery_bronze_dataset_id" {
+  description = "ID of the BigQuery source dataset."
   type        = string
 }
 

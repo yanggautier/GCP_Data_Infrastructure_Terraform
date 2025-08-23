@@ -1,7 +1,7 @@
 # Create a BigQuery dataset for the bronze layer
 resource "google_bigquery_dataset" "bronze_dataset" {
-  dataset_id = "bronze_${var.environment}"
-  location   = var.region
+  dataset_id  = "bronze_${var.environment}"
+  location    = var.region
   description = "Raw data from Datastream."
 
   labels = {
@@ -28,16 +28,16 @@ resource "google_bigquery_dataset" "bronze_dataset" {
   # Access for the DBT service account
   access {
     role          = "roles/bigquery.dataViewer"
-    user_by_email = var.dbt_service_account_email
+    user_by_email = var.kubernetes_service_account_email
   }
-  
+
 }
 
 
 # Create a BigQuery dataset for the silver layer
 resource "google_bigquery_dataset" "silver_dataset" {
-  dataset_id = "silver_${var.environment}"
-  location   = var.region
+  dataset_id  = "silver_${var.environment}"
+  location    = var.region
   description = "Silver dataset"
 
   labels = {
@@ -58,14 +58,14 @@ resource "google_bigquery_dataset" "silver_dataset" {
   # Access for the DBT service account
   access {
     role          = "roles/bigquery.dataEditor"
-    user_by_email = var.dbt_service_account_email
+    user_by_email = var.kubernetes_service_account_email
   }
 }
 
 # Create a BigQuery dataset for the gold layer
 resource "google_bigquery_dataset" "gold_dataset" {
-  dataset_id = "gold_${var.environment}"
-  location   = var.region
+  dataset_id  = "gold_${var.environment}"
+  location    = var.region
   description = "Gold dataset"
 
   labels = {
@@ -86,6 +86,6 @@ resource "google_bigquery_dataset" "gold_dataset" {
   # Access for the DBT service account
   access {
     role          = "roles/bigquery.dataEditor"
-    user_by_email = var.dbt_service_account_email
+    user_by_email = var.kubernetes_service_account_email
   }
 }
