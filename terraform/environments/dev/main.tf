@@ -274,12 +274,12 @@ module "dataviz" {
   project_id                       = var.project_id
   region                           = var.region
   environment                      = var.environment
-  superset_db_password             = module.database.google_secret_manager_secret_version.superset_db_password_secret.secret_data
+  superset_db_password             = module.database.superset_db_password
   superset_database_name           = var.superset_database_name
   superset_database_user_name      = var.superset_database_user_name
   kubernetes_service_account_email = google_service_account.kubernetes_sa.email
-  superset_redis_cache_host        = module.database.superset_redis_cache.host
-  cloud_sql_instance_name          = module.database.google_sql_database_instance.postgresql_instance.name
+  superset_redis_cache_host        = module.database.superset_redis_cache_host
+  cloud_sql_instance_name          = module.database.cloud_sql_instance_name
 
   depends_on = [
     google_project_service.apis,

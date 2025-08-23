@@ -10,11 +10,6 @@ output "cloud_sql_private_ip" {
   value       = module.database.cloud_sql_private_ip
 }
 
-output "postgresql_setup_commands" {
-  description = "SQL commands to set up PostgreSQL publication and replication slot for Datastream."
-  value       = module.database.postgresql_setup_commands
-}
-
 # ------------------- Outputs for BigQuery Datasets -------------------
 output "bigquery_bronze_dataset_id" {
   description = "ID of the BigQuery bronze dataset."

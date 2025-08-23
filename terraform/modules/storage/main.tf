@@ -23,6 +23,10 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
+resource "random_id" "dbt_bucket_suffix" {
+  byte_length = 4
+}
+
 # Bucket for DBT generated docs
 resource "google_storage_bucket" "dbt-doc-bucket" {
   name                        = "dbt-doc-bucket-${var.environment}-${random_id.dbt_bucket_suffix.hex}"
