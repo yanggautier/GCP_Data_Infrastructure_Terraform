@@ -10,15 +10,15 @@ output "time_sleep_wait_for_sql_instance_id" {
 
 output "superset_db_password" {
   description = "Superset database password"
-  value       = google_secret_manager_secret_version.superset_db_password_secret.secret_data
+  value       = data.google_secret_manager_secret_version.superset_db_password_secret.secret_data
 }
 
 output "cloud_sql_instance_name" {
   description = "Cloud SQL Instance name."
-  value       = google_sql_database_instance.name
+  value       = google_sql_database_instance.postgresql_instance.name
 }
 
 output "superset_redis_cache_host" {
   description = "Memorystore redis instance host"
-  value = superset_redis_cache.host
+  value = google_redis_instance.superset_redis_cache.host
 }
