@@ -123,7 +123,7 @@ variable "cloud_composer_worker_storage_gb" {
   default     = 10
 }
 
-variable "admin_email" {
+variable "cloud_composer_admin_email" {
   description = "Admin email for cloud composer dag run failure"
   type        = string
 }

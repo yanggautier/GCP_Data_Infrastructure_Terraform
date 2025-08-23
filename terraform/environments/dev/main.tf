@@ -258,7 +258,7 @@ module "orchestration" {
   bigquery_bronze_dataset_id          = module.bigquery.bigquery_bronze_dataset_id
   kubernetes_service_account_email    = google_service_account.kubernetes_sa.email
   kubernetes_service_account_id       = google_service_account.kubernetes_sa.name
-  admin_email                         = var.admin_email
+  cloud_composer_admin_email          = var.cloud_composer_admin_email
 
   depends_on = [
     google_project_service.apis,
