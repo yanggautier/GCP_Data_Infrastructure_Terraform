@@ -105,11 +105,6 @@ variable "redis_instance_tier" {
   default     = "BASIC"
 }
 
-variable "redis_prevent_destroy" {
-  description = "Memorystore delete prevention"
-  type        = bool
-  default     = false
-}
 # --------------------- Secret Manager configuration variables ----------------------------
 variable "business_db_password_secret_name" {
   description = "Name of the Secret Manager secret holding the database password"
