@@ -62,7 +62,7 @@ resource "kubernetes_config_map" "superset_config" {
       database_host     = "127.0.0.1"
       database_port     = "5432"
       database_name     = var.superset_database_name
-      secret_key        = random_string.superset_secret_key
+      secret_key        = random_string.superset_secret_key.result
     })
   }
 }
