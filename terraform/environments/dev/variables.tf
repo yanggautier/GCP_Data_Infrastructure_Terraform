@@ -1,3 +1,4 @@
+# ---------------------- Project level variables ------------------------------
 # Terraform variables for the dev environment
 variable "project_id" {
   description = "Project ID"
@@ -17,20 +18,31 @@ variable "environment" {
   default     = "dev"
 }
 
-# ------------- Settings for Database ----------------------
-variable "database_name" {
+# ---------------------- Business database variables ------------------------------
+variable "business_database_name" {
   description = "Name of the Cloud SQL database"
   type        = string
   default     = "my_db"
 }
 
-variable "database_user_name" {
+variable "business_database_user_name" {
   description = "Cloud SQL user "
   type        = string
   default     = "db_user"
 }
 
-# ------------- Settings for BigQuery IAM ----------------------
+# ---------------------- Superset database variables ------------------------------
+variable "superset_database_name" {
+  description = "Name of the Cloud SQL superset database"
+  type        = string
+}
+
+variable "superset_database_user_name" {
+  description = "Cloud SQL user for Superset database"
+  type        = string
+}
+
+# ---------------------- BigQuery IAM variables ------------------------------
 variable "bigquery_owner_user" {
   description = "Email for the owner of the BigQuery dataset"
   type        = string
@@ -47,7 +59,7 @@ variable "bigquery_contributor_user" {
 }
 
 
-# ------------- Settings for Networking ----------------------
+# ---------------------- Networking variables ------------------------------
 # Subnetwork for Datastream
 variable "datastream_subnetwork_address" {
   description = "CIDR range for the subnetwork"
@@ -69,22 +81,33 @@ variable "datastream_private_connection_subnet" {
 }
 
 
-# ------------- Settings for Secret Manager ----------------------
+# ---------------------- Secret Manager variables ------------------------------
 # Secret name for the Cloud SQL database password in Secret Manager
-variable "db_password_secret_name" {
+variable "business_db_password_secret_name" {
   description = "Secret name form Secret Manager"
   type        = string
-  default     = "postgres-instance-password"
 }
 
 # Secret version for the Cloud SQL database password in Secret Manager
-variable "secret_version" {
+variable "business_secret_version" {
   description = "Version of secret in Secret Manager"
   type        = number
   default     = 1
 }
 
-# ------------- Settings for GKE ----------------------
+variable "superset_db_password_secret_name" {
+  description = "Secret name form Secret Manager"
+  type        = string
+}
+
+# Secret version for the Cloud SQL database password in Secret Manager
+variable "superset_secret_version" {
+  description = "Version of secret in Secret Manager"
+  type        = number
+  default     = 1
+}
+
+# ------------------------ GKE variables ------------------------------
 # Secondary subnet used for GKE Pods (Alias IP ranges)
 variable "gke_secondary_pod_range" {
   description = "Secondary IP range for GKE pods"
@@ -108,10 +131,9 @@ variable "cluster_deletion_protection" {
 variable "gke_master_ipv4_cidr_block" {
   description = "CIDR block for the GKE master IP."
   type        = string
-  default     = "172.16.0.0/28"
 }
 
-# ------------- Setting for Cloud Composer ----------------------
+# ---------------------- Cloud Composer variables ------------------------------
 # Cloud Composer variables
 variable "cloud_composer_size" {
   description = "Size of the Cloud Composer environment."
@@ -171,4 +193,9 @@ variable "cloud_composer_worker_storage_gb" {
   description = "Storage in GB for the Cloud Composer worker."
   type        = number
   default     = 10
+}
+
+variable "admin_email" {
+  description = "Admin email for cloud composer dag run failure"
+  type        = string
 }

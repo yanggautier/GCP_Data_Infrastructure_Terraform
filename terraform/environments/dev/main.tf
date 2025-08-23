@@ -1,3 +1,4 @@
+# Define google providers version
 terraform {
   required_version = ">= 1.0"
   required_providers {
@@ -14,13 +15,6 @@ terraform {
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
-
-    /*
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.0"
-    }
-    */
   }
 
   backend "gcs" {
@@ -29,6 +23,7 @@ terraform {
   }
 }
 
+# Google provider
 provider "google" {
   project = var.project_id
   region  = var.region
@@ -44,7 +39,7 @@ locals {
   current_env = local.shared_config.env_config[var.environment]
 }
 
-# Enable APIs
+# Enable APIs for GCP services
 resource "google_project_service" "apis" {
   for_each = toset([
     "servicenetworking.googleapis.com",
@@ -55,7 +50,8 @@ resource "google_project_service" "apis" {
     "cloudbuild.googleapis.com",
     "run.googleapis.com",
     "artifactregistry.googleapis.com",
-    "containerregistry.googleapis.com"
+    "containerregistry.googleapis.com",
+    "redis.googleapis.com"
   ])
 
   project            = var.project_id
@@ -63,7 +59,7 @@ resource "google_project_service" "apis" {
   disable_on_destroy = false
 }
 
-
+# VPC configuration module
 module "networking" {
   source                        = "../../modules/networking"
   project_id                    = var.project_id
@@ -76,6 +72,7 @@ module "networking" {
   depends_on                    = [google_project_service.apis]
 }
 
+# Storage (GCS) module, bucket for business data, DBT docs 
 module "storage" {
   source      = "../../modules/storage"
   project_id  = var.project_id
@@ -85,26 +82,31 @@ module "storage" {
   depends_on = [google_project_service.apis]
 }
 
+# Database module, create PostgreSQL Cloud SQL instance and databases for business and Superset
 module "database" {
-  source                    = "../../modules/database"
-  project_id                = var.project_id
-  region                    = var.region
-  environment               = var.environment
-  database_name             = var.database_name
-  database_user_name        = var.database_user_name
-  instance_tier             = local.current_env.instance_tier
-  disk_size                 = local.current_env.disk_size
-  backup_enabled            = local.current_env.backup_enabled
-  deletion_protection       = local.current_env.deletion_protection
-  max_replication_slots     = local.current_env.max_replication_slots
-  max_wal_senders           = local.current_env.max_wal_senders
-  db_password_secret_name   = var.db_password_secret_name
-  secret_version            = var.secret_version
-  vpc_id                    = module.networking.vpc_id
-  private_vpc_connection_id = module.networking.private_ip_alloc_name
-  vpc_name                  = module.networking.vpc_name
-  datastream_subset_name    = module.networking.datastream_subnet_name
-  private_vpc_connection    = module.networking.private_vpc_connection
+  source                           = "../../modules/database"
+  project_id                       = var.project_id
+  region                           = var.region
+  environment                      = var.environment
+  business_database_name           = var.business_database_name
+  business_database_user_name      = var.business_database_user_name
+  superset_database_name           = var.superset_database_name
+  superset_database_user_name      = var.superset_database_user_name
+  instance_tier                    = local.current_env.instance_tier
+  disk_size                        = local.current_env.disk_size
+  backup_enabled                   = local.current_env.backup_enabled
+  deletion_protection              = local.current_env.deletion_protection
+  max_replication_slots            = local.current_env.max_replication_slots
+  max_wal_senders                  = local.current_env.max_wal_senders
+  business_db_password_secret_name = var.business_db_password_secret_name
+  business_secret_version          = var.business_secret_version
+  superset_db_password_secret_name = var.superset_db_password_secret_name
+  superset_secret_version          = var.superset_secret_version
+  vpc_id                           = module.networking.vpc_id
+  private_vpc_connection_id        = module.networking.private_ip_alloc_name
+  vpc_name                         = module.networking.vpc_name
+  datastream_subset_name           = module.networking.datastream_subnet_name
+  private_vpc_connection           = module.networking.private_vpc_connection
 
   depends_on = [
     google_project_service.apis,
@@ -112,6 +114,7 @@ module "database" {
   ]
 }
 
+# Module for core of Datastream
 module "datastream_core" {
   source                               = "../../modules/datastream-core"
   project_id                           = var.project_id
@@ -119,10 +122,10 @@ module "datastream_core" {
   environment                          = var.environment
   vpc_id                               = module.networking.vpc_id
   private_vpc_connection_id            = module.networking.private_ip_alloc_name
-  database_name                        = var.database_name
-  database_user_name                   = var.database_user_name
+  database_name                        = var.business_database_name
+  database_user_name                   = var.business_database_user_name
   datastream_subnet_id                 = module.networking.datastream_subnet_id
-  db_password_secret_name              = var.db_password_secret_name
+  db_password_secret_name              = var.business_db_password_secret_name
   bigquery_bronze_dataset_id           = module.bigquery.bigquery_bronze_dataset_id
   wait_for_sql_instance_id             = module.database.time_sleep_wait_for_sql_instance_id
   cloud_sql_private_ip                 = module.database.cloud_sql_private_ip
@@ -135,14 +138,14 @@ module "datastream_core" {
   ]
 
 }
-# Create a service account for DBT to access BigQuery
-resource "google_service_account" "dbt_sa" {
-  account_id   = "dbt-bigquery-sa"
-  display_name = "DBT BigQuery Service Account"
+# Create a service account for Kubernetes
+resource "google_service_account" "kubernetes_sa" {
+  account_id   = "kubernetes-sa"
+  display_name = "Kubernetes Service Account"
   project      = var.project_id
-  description  = "Service account for DBT to access BigQuery"
+  description  = "Service account for Kubernetes"
 }
-
+# Module for bigquery 
 module "bigquery" {
   source                           = "../../modules/bigquery"
   project_id                       = var.project_id
@@ -152,12 +155,12 @@ module "bigquery" {
   bigquery_analyst_user            = var.bigquery_analyst_user
   bigquery_contributor_user        = var.bigquery_contributor_user
   datastream_service_account_email = module.datastream_core.datastream_service_account_email
-  dbt_service_account_email        = google_service_account.dbt_sa.email
+  kubernetes_service_account_email = google_service_account.kubernetes_sa.email
 
-  depends_on = [google_project_service.apis, google_service_account.dbt_sa]
+  depends_on = [google_project_service.apis, google_service_account.kubernetes_sa]
 }
 
-
+# Datastream Stream module
 module "datastream_stream" {
   source                                = "../../modules/datastream-stream"
   project_id                            = var.project_id
@@ -190,10 +193,10 @@ resource "google_project_iam_member" "cluster_admin_role" {
 }
 
 # Cluster GKE
-resource "google_container_cluster" "dbt_cluster" {
-  name       = "dbt-cluster-${var.environment}"
-  location   = var.region
-  project    = var.project_id
+resource "google_container_cluster" "kubernetes_cluster" {
+  name     = "kubernetes-cluster-${var.environment}"
+  location = var.region
+  project  = var.project_id
 
   network    = module.networking.vpc_id
   subnetwork = module.networking.gke_subnet_id
@@ -203,14 +206,6 @@ resource "google_container_cluster" "dbt_cluster" {
   # initial_node_count       = 1
   # remove_default_node_pool = true
 
-  /*
-  # Enable private cluster
-  private_cluster_config {
-    enable_private_nodes    = true
-    enable_private_endpoint = false
-    master_ipv4_cidr_block  = var.gke_master_ipv4_cidr_block
-  }
-  */
   # Enable IP aliasing for GKE
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
@@ -235,12 +230,12 @@ resource "google_container_cluster" "dbt_cluster" {
 data "google_client_config" "default" {}
 
 provider "kubernetes" {
-  host                   = "https://${google_container_cluster.dbt_cluster.endpoint}"
+  host                   = "https://${google_container_cluster.kubernetes_cluster.endpoint}"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(google_container_cluster.dbt_cluster.master_auth[0].cluster_ca_certificate) 
+  cluster_ca_certificate = base64decode(google_container_cluster.kubernetes_cluster.master_auth[0].cluster_ca_certificate)
 }
 
-
+# Module for Cloud Composer and GKE
 module "orchestration" {
   source                              = "../../modules/orchestration"
   project_id                          = var.project_id
@@ -261,13 +256,34 @@ module "orchestration" {
   gke_master_ipv4_cidr_block          = var.gke_master_ipv4_cidr_block
   cluster_deletion_protection         = var.cluster_deletion_protection
   bigquery_bronze_dataset_id          = module.bigquery.bigquery_bronze_dataset_id
-  dbt_service_account_email           = google_service_account.dbt_sa.email
-  dbt_service_account_id              = google_service_account.dbt_sa.name
+  kubernetes_service_account_email    = google_service_account.kubernetes_sa.email
+  kubernetes_service_account_id       = google_service_account.kubernetes_sa.name
+  admin_email                         = var.admin_email
 
   depends_on = [
     google_project_service.apis,
     module.networking,
-    google_service_account.dbt_sa,
-    google_container_cluster.dbt_cluster
+    google_service_account.kubernetes_sa,
+    google_container_cluster.kubernetes_cluster
+  ]
+}
+
+# Superset module
+module "dataviz" {
+  source                           = "../../modules/dataviz"
+  project_id                       = var.project_id
+  region                           = var.region
+  environment                      = var.environment
+  superset_db_password             = module.database.google_secret_manager_secret_version.superset_db_password_secret.secret_data
+  superset_database_name           = var.superset_database_name
+  superset_database_user_name      = var.superset_database_user_name
+  kubernetes_service_account_email = google_service_account.kubernetes_sa.email
+  superset_redis_cache_host        = module.database.superset_redis_cache.host
+  cloud_sql_instance_name          = module.database.google_sql_database_instance.postgresql_instance.name
+
+  depends_on = [
+    google_project_service.apis,
+    module.networking,
+    google_container_cluster.kubernetes_cluster
   ]
 }
