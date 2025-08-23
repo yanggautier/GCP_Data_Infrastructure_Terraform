@@ -199,7 +199,7 @@ resource "google_redis_instance" "superset_redis_cache" {
   location_id    = var.region
 
   lifecycle {
-    prevent_destroy = var.environment == "prod" ? true : false
+    prevent_destroy = var.redis_prevent_destroy
   }
   # Specify the VPC for the project
   authorized_network = "projects/${var.project_id}/global/networks/${var.vpc_name}"
