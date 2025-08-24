@@ -114,6 +114,7 @@ variable "business_db_password_secret_name" {
 variable "business_secret_version" {
   description = "Version of secret in Secret Manager"
   type        = number
+  default     = 1
 }
 
 variable "superset_db_password_secret_name" {
@@ -124,4 +125,5 @@ variable "superset_db_password_secret_name" {
 variable "superset_secret_version" {
   description = "Version of secret in Secret Manager"
   type        = number
+  default     = 1
 }

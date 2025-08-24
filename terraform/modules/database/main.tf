@@ -196,7 +196,7 @@ resource "google_redis_instance" "superset_redis_cache" {
   region         = var.region
   project        = var.project_id
   connect_mode   = "DIRECT_PEERING"
-  location_id    = var.region
+  #location_id    = var.region
 
   lifecycle {
     prevent_destroy = false
