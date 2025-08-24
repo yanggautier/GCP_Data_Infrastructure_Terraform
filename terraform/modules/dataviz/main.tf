@@ -1,4 +1,11 @@
 # ----------------- Configuration for Superset Deployment ---------------------
+# Add IAM permission to have access Cloud SQL
+resource "google_project_iam_member" "superset_cloudsql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${var.kubernetes_service_account_email}"
+}
+
 # Create a namespace for Superset
 resource "kubernetes_namespace" "superset_namespace" {
   metadata {
@@ -98,7 +105,7 @@ resource "kubernetes_deployment" "superset" {
 
         init_container {
           name  = "superset-init"
-          image = "apache/superset:3.0.0"
+          image = "apache/superset:latest"
           command = ["sh", "-c"]
           args = [
             "sleep 30 && superset db upgrade"
@@ -158,7 +165,7 @@ resource "kubernetes_deployment" "superset" {
 
         container {
           name  = "superset"
-          image = "apache/superset:3.0.0"
+          image = "apache/superset:latest"
           
           port {
             container_port = 8088
