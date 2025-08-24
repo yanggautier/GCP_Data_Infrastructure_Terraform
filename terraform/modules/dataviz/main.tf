@@ -105,12 +105,10 @@ resource "kubernetes_deployment" "superset" {
 
         init_container {
           name  = "superset-init"
-          image = "apache/superset:latest"
-          command = ["sh", "-c"]
-          args = [
-            "sleep 30 && superset db upgrade"
-          ]
-          
+          image = "apache/superset:3.0.0"
+          command = ["/bin/bash", "-c"]
+          args    = ["sleep 15 && /usr/bin/dumb-init -- FLASK_APP=superset superset db upgrade"]
+                  
           env {
             name = "SUPERSET_CONFIG_PATH"
             value = "/app/superset_config.py"
@@ -165,7 +163,7 @@ resource "kubernetes_deployment" "superset" {
 
         container {
           name  = "superset"
-          image = "apache/superset:latest"
+          image = "apache/superset:3.0.0"
           
           port {
             container_port = 8088
