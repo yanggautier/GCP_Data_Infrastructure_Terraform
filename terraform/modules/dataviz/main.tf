@@ -99,11 +99,10 @@ resource "kubernetes_deployment" "superset" {
         init_container {
           name  = "superset-init"
           image = "apache/superset:latest"
-          command = ["python"]
-          args = [
-            "-m", "superset.cli.main", "db", "upgrade"
+          command = ["/bin/bash"]
+          args =  ["-c",
+            "sleep 15 && FLASK_APP=superset superset db upgrade"
           ]
-          
           env {
             name = "SUPERSET_CONFIG_PATH"
             value = "/app/superset_config.py"
