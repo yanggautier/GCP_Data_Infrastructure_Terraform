@@ -34,9 +34,9 @@ resource "kubernetes_secret" "superset_db_credentials" {
   }
 
   data = {
-    username = base64encode(var.superset_database_user_name)
-    password = base64encode(var.superset_db_password)
-    database = base64encode(var.superset_database_name)
+    username = var.superset_database_user_name
+    password = var.superset_db_password
+    database = var.superset_database_name
   }
 
   type = "Opaque"
@@ -96,7 +96,13 @@ resource "kubernetes_deployment" "superset" {
       spec {
         service_account_name = kubernetes_service_account.superset_k8s_sa.metadata[0].name
         
-        # Init container for database
+        init_container {
+          name  = "wait-for-proxy"
+          image = "busybox:1.35"
+          command = ["sh", "-c"]
+          args = ["until nc -z 127.0.0.1 5432; do echo 'Waiting for Cloud SQL proxy...'; sleep 2; done; echo 'Cloud SQL proxy is ready'"]
+        }
+
         init_container {
           name  = "superset-init"
           image = "apache/superset:latest"
@@ -108,10 +114,45 @@ resource "kubernetes_deployment" "superset" {
             value = "/app/superset_config.py"
           }
           
-          env_from {
-            secret_ref {
-              name = kubernetes_secret.superset_db_credentials.metadata[0].name
+          # FIXED: Add all database connection environment variables
+          env {
+            name = "DATABASE_USER"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.superset_db_credentials.metadata[0].name
+                key  = "username"
+              }
             }
+          }
+          
+          env {
+            name = "DATABASE_PASSWORD"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.superset_db_credentials.metadata[0].name
+                key  = "password"
+              }
+            }
+          }
+          
+          env {
+            name = "DATABASE_NAME"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.superset_db_credentials.metadata[0].name
+                key  = "database"
+              }
+            }
+          }
+
+          env {
+            name  = "DATABASE_HOST"
+            value = "127.0.0.1"
+          }
+
+          env {
+            name  = "DATABASE_PORT"
+            value = "5432"
           }
 
           volume_mount {
@@ -178,13 +219,12 @@ resource "kubernetes_deployment" "superset" {
             value = var.superset_redis_cache_host
           }
 
-          # Health checks
           liveness_probe {
             http_get {
               path = "/health"
               port = 8088
             }
-            initial_delay_seconds = 60
+            initial_delay_seconds = 120 
             period_seconds        = 30
             timeout_seconds       = 10
           }
@@ -194,7 +234,7 @@ resource "kubernetes_deployment" "superset" {
               path = "/health"
               port = 8088
             }
-            initial_delay_seconds = 30
+            initial_delay_seconds = 60 
             period_seconds        = 15
             timeout_seconds       = 5
           }
@@ -216,7 +256,6 @@ resource "kubernetes_deployment" "superset" {
           }
         }
 
-        # Cloud SQL Auth Proxy Sidecar
         container {
           name  = "cloudsql-proxy"
           image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0"
@@ -226,6 +265,15 @@ resource "kubernetes_deployment" "superset" {
             "--port=5432",
             "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
           ]
+
+          readiness_probe {
+            tcp_socket {
+              port = 5432
+            }
+            initial_delay_seconds = 10
+            period_seconds        = 5
+            timeout_seconds       = 3
+          }
 
           security_context {
             run_as_non_root = true
@@ -251,6 +299,12 @@ resource "kubernetes_deployment" "superset" {
         }
       }
     }
+  }
+
+  timeouts {
+    create = "10m"
+    update = "10m"
+    delete = "5m"
   }
 
   depends_on = [
