@@ -95,19 +95,14 @@ resource "kubernetes_deployment" "superset" {
 
       spec {
         service_account_name = kubernetes_service_account.superset_k8s_sa.metadata[0].name
-        
-        init_container {
-          name  = "wait-for-proxy"
-          image = "busybox:1.35"
-          command = ["sh", "-c"]
-          args = ["until nc -z 127.0.0.1 5432; do echo 'Waiting for Cloud SQL proxy...'; sleep 2; done; echo 'Cloud SQL proxy is ready'"]
-        }
 
         init_container {
           name  = "superset-init"
           image = "apache/superset:latest"
-          command = ["superset"]
-          args = ["db", "upgrade"]
+          command = ["sh", "-c"]
+          args = [
+            "sleep 30 && superset db upgrade"
+          ]
           
           env {
             name = "SUPERSET_CONFIG_PATH"
@@ -224,9 +219,10 @@ resource "kubernetes_deployment" "superset" {
               path = "/health"
               port = 8088
             }
-            initial_delay_seconds = 120 
+            initial_delay_seconds = 180 
             period_seconds        = 30
             timeout_seconds       = 10
+            failure_threshold     = 5
           }
 
           readiness_probe {
@@ -234,9 +230,10 @@ resource "kubernetes_deployment" "superset" {
               path = "/health"
               port = 8088
             }
-            initial_delay_seconds = 60 
+            initial_delay_seconds = 120 
             period_seconds        = 15
             timeout_seconds       = 5
+            failure_threshold     = 3
           }
 
           volume_mount {
