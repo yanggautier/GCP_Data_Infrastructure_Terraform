@@ -99,9 +99,9 @@ resource "kubernetes_deployment" "superset" {
         init_container {
           name  = "superset-init"
           image = "apache/superset:latest"
-          command = ["sh", "-c"]
+          command = ["python"]
           args = [
-            "sleep 30 && superset db upgrade"
+            "-m", "superset.cli.main", "db", "upgrade"
           ]
           
           env {
