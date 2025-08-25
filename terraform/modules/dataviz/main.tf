@@ -214,38 +214,29 @@ resource "kubernetes_deployment" "superset" {
           name  = "superset"
           image = "apache/superset:3.1.0"
           # Add the init logic to the command/args of the main container
-          command = ["/bin/sh", "-c"]
+          command = ["/bin/bash", "-c"]
           args = [
             <<-EOT
             echo "Starting Superset pre-launch tasks..."
             
-            # Wait for Cloud SQL proxy
-            echo "Waiting for Cloud SQL proxy..."
-            for i in $(seq 1 60); do
-              if nc -z 127.0.0.1 5432 2>/dev/null; then
-                echo "Cloud SQL proxy is ready!"
-                break
-              else
-                echo "Waiting for Cloud SQL proxy... attempt $i/60"
-                sleep 5
-              fi
-              if [ $i -eq 60 ]; then
-                echo "ERROR: Cloud SQL proxy not ready after 300 seconds"
-                exit 1
-              fi
+            # Wait for Cloud SQL proxy to be available
+            until nc -z 127.0.0.1 5432; do   
+                echo "Waiting for Cloud SQL proxy to start..."
+                sleep 2
             done
-            
+            echo "Cloud SQL proxy is ready! Starting database initialization..."
+
             # Initialize Superset database
-            echo "Initializing Superset database..."
             superset db upgrade
             superset init
             
-            echo "Superset initialization completed successfully! Launching server..."
+            echo "Superset database initialization completed. Starting web server..."
             
             # Start the main Superset webserver process
             superset run -p 8088 --with-threads --reload --workers 4
             EOT
           ]
+          
           port {
             container_port = 8088
           }
