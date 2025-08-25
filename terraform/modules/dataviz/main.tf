@@ -107,7 +107,7 @@ resource "kubernetes_deployment" "superset" {
           name  = "superset-init"
           image = "apache/superset:3.0.0"
           command = ["/bin/bash", "-c"]
-          args    = ["sleep 15 && /usr/bin/dumb-init -- FLASK_APP=superset superset db upgrade"]
+          args    = ["sleep 15 && superset db upgrade"]
                   
           env {
             name = "SUPERSET_CONFIG_PATH"
@@ -304,9 +304,9 @@ resource "kubernetes_deployment" "superset" {
   }
 
   timeouts {
-    create = "10m"
-    update = "10m"
-    delete = "5m"
+    create = "5m"
+    update = "5m"
+    delete = "3m"
   }
 
   depends_on = [
