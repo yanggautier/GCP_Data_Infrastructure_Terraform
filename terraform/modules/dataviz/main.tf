@@ -213,26 +213,26 @@ resource "kubernetes_deployment" "superset" {
           name  = "superset"
           image = "apache/superset:3.1.0"
           # Add the init logic to the command/args of the main container
-          command = ["/bin/bash", "-c"]
+          command = ["/bin/sh", "-c"]
           args = [
             <<-EOT
             echo "Starting Superset pre-launch tasks..."
             
             # Wait for Cloud SQL proxy to be available
-            while ! (echo > /dev/tcp/127.0.0.1/5432) 2>/dev/null; do
+            until echo > /dev/tcp/127.0.0.1/5432 2>/dev/null; do
                 echo "Waiting for Cloud SQL proxy to start..."
                 sleep 2
             done
             echo "Cloud SQL proxy is ready! Starting database initialization..."
 
-            # Initialize Superset database by explicitly calling the Python module
-            python -m superset db upgrade
-            python -m superset init
-            
+            # Initialize Superset database using the official entry point
+            /usr/bin/superset db upgrade
+            /usr/bin/superset init
+
             echo "Superset database initialization completed. Starting web server..."
             
             # Start the main Superset webserver process
-            python -m superset run -p 8088 --with-threads --reload --workers 4
+            /usr/bin/superset run -p 8088 --with-threads --reload --workers 4
             EOT
           ]
           port {
