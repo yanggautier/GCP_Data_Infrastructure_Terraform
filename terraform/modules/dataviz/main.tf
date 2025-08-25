@@ -219,8 +219,8 @@ resource "kubernetes_deployment" "superset" {
             <<-EOT
             echo "Starting Superset pre-launch tasks..."
             
-            # Wait for Cloud SQL proxy to be available
-            until nc -z 127.0.0.1 5432; do   
+            # Attendre que le proxy Cloud SQL soit disponible
+            while ! (echo > /dev/tcp/127.0.0.1/5432) 2>/dev/null; do
                 echo "Waiting for Cloud SQL proxy to start..."
                 sleep 2
             done
@@ -236,7 +236,6 @@ resource "kubernetes_deployment" "superset" {
             superset run -p 8088 --with-threads --reload --workers 4
             EOT
           ]
-          
           port {
             container_port = 8088
           }
