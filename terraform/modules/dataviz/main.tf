@@ -107,7 +107,7 @@ resource "kubernetes_deployment" "superset" {
           name  = "superset-init"
           image = "apache/superset:3.0.0"
           command = ["/bin/sh", "-c"]
-          args    = ["sleep 15 && /usr/bin/python3 -m superset db upgrade"]
+          args    = ["sleep 15 && superset db upgrade"]
                   
           env {
             name = "SUPERSET_CONFIG_PATH"
