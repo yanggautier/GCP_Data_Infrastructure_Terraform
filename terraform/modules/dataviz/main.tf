@@ -6,6 +6,14 @@ resource "google_project_iam_member" "superset_cloudsql_client" {
   member  = "serviceAccount:${var.kubernetes_service_account_email}"
 }
 
+
+resource "google_project_iam_member" "superset_cloudsql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${var.kubernetes_service_account_email}"
+}
+
+
 # Create a namespace for Superset
 resource "kubernetes_namespace" "superset_namespace" {
   metadata {
@@ -33,8 +41,7 @@ resource "kubernetes_service_account" "superset_k8s_sa" {
   }
 }
 
-
-# Bind the DBT service account to the Kubernetes service account
+# Bind the Superset service account to the Kubernetes service account
 resource "google_service_account_iam_binding" "workload_identity_binding" {
   service_account_id = var.kubernetes_service_account_id
   role               = "roles/iam.workloadIdentityUser"
@@ -226,13 +233,13 @@ resource "kubernetes_deployment" "superset" {
             echo "Cloud SQL proxy is ready! Starting database initialization..."
 
             # Initialize Superset database
-            superset db upgrade
-            superset init
+            /usr/local/bin/superset db upgrade
+            /usr/local/bin/superset init
 
             echo "Superset database initialization completed. Starting web server..."
             
             # Start the main Superset webserver process
-            /usr/bin/superset run -p 8088 --with-threads --reload --workers 4
+            /usr/local/bin/superset run -p 8088 --with-threads --reload --workers 4
             EOT
           ]
           port {
