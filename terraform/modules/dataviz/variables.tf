@@ -26,6 +26,11 @@ variable "kubernetes_service_account_email" {
   type        = string
 }
 
+variable "kubernetes_service_account_id" {
+  description = "ID of the Kubernetes service account."
+  type        = string
+}
+
 variable "superset_request_cpu" {
   description = "Superset container requests cpu in Kubernetes"
   type = string
