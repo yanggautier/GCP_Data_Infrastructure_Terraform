@@ -105,9 +105,46 @@ resource "kubernetes_deployment" "superset" {
 
         init_container {
           name  = "superset-init"
-          image = "apache/superset:3.0.0"
-          command = ["/bin/sh", "-c"]
-          args    = ["sleep 15 && superset-init db upgrade"]
+          image = "apache/superset:3.1.0"  # Use specific stable version
+                command = ["sh", "-c"]
+                args = [
+                  <<-EOT
+                  echo "Starting Superset database initialization..."
+                  
+                  # Wait for Cloud SQL proxy
+                  echo "Waiting for Cloud SQL proxy..."
+                  for i in $(seq 1 60); do
+                    if nc -z 127.0.0.1 5432 2>/dev/null; then
+                      echo "Cloud SQL proxy is ready!"
+                      break
+                    else
+                      echo "Waiting for Cloud SQL proxy... attempt $i/60"
+                      sleep 5
+                    fi
+                    if [ $i -eq 60 ]; then
+                      echo "ERROR: Cloud SQL proxy not ready after 300 seconds"
+                      exit 1
+                    fi
+                  done
+                  
+                  # Initialize Superset database
+                  echo "Initializing Superset database..."
+                  superset db upgrade
+                  
+                  # Create admin user (optional, comment out if not needed)
+                  # superset fab create-admin \
+                  #   --username admin \
+                  #   --firstname Superset \
+                  #   --lastname Admin \
+                  #   --email admin@superset.com \
+                  #   --password admin
+                  
+                  # Initialize Superset
+                  superset init
+                  
+                  echo "Superset initialization completed successfully!"
+                  EOT
+                ]
                   
           env {
             name = "SUPERSET_CONFIG_PATH"
@@ -163,7 +200,7 @@ resource "kubernetes_deployment" "superset" {
 
         container {
           name  = "superset"
-          image = "apache/superset:3.0.0"
+          image = "apache/superset:3.1.0"
           
           port {
             container_port = 8088
