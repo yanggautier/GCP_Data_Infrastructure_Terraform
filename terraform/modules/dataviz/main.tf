@@ -218,16 +218,16 @@ resource "kubernetes_deployment" "superset" {
             <<-EOT
             echo "Starting Superset pre-launch tasks..."
             
-            # Wait for Cloud SQL proxy to be available
-            until echo > /dev/tcp/127.0.0.1/5432 2>/dev/null; do
+            # Wait for Cloud SQL proxy using a Python script
+            until python -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.settimeout(1); s.connect(('127.0.0.1', 5432)); s.close()" >/dev/null 2>&1; do
                 echo "Waiting for Cloud SQL proxy to start..."
                 sleep 2
             done
             echo "Cloud SQL proxy is ready! Starting database initialization..."
 
-            # Initialize Superset database using the official entry point
-            /usr/bin/superset db upgrade
-            /usr/bin/superset init
+            # Initialize Superset database
+            superset db upgrade
+            superset init
 
             echo "Superset database initialization completed. Starting web server..."
             
