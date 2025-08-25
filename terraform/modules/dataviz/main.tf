@@ -77,6 +77,8 @@ resource "kubernetes_config_map" "superset_config" {
       redis_host        = var.superset_redis_cache_host
       database_host     = "127.0.0.1"
       database_port     = "5432"
+      database_user     = var.superset_database_user_name
+      database_password = var.superset_db_password
       database_name     = var.superset_database_name
       secret_key        = random_string.superset_secret_key.result
     })

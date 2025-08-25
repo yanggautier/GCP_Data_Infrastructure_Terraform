@@ -1,8 +1,15 @@
 import os
 from cachelib.redis import RedisCache
 
+
+DATABASE_USER = ${database_user}
+DATABASE_PASSWORD = ${database_password}
+DATABASE_HOST = ${database_host}
+DATABASE_PORT = "5432"
+DATABASE_NAME = ${database_name}
+
 # Database configuration
-SQLALCHEMY_DATABASE_URI = f"postgresql://{os.environ['DATABASE_USER']}:{os.environ['DATABASE_PASSWORD']}@{os.environ['DATABASE_HOST']}:{os.environ['DATABASE_PORT']}/{os.environ['DATABASE_NAME']}"
+SQLALCHEMY_DATABASE_URI = f"postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 # Redis configuration for caching and Celery
 REDIS_HOST = "${redis_host}"
