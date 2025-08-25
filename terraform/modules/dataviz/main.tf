@@ -41,7 +41,6 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
   members            = ["serviceAccount:${var.project_id}.svc.id.goog[${var.superset_namespace}/${kubernetes_service_account.superset_k8s_sa.metadata[0].name}]"]
 }
 
-
 # Kubernetes creaential for Superset database
 resource "kubernetes_secret" "superset_db_credentials" {
   metadata {

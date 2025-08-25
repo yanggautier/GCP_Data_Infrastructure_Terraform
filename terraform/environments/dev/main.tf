@@ -280,7 +280,7 @@ module "dataviz" {
   kubernetes_service_account_email = google_service_account.kubernetes_sa.email
   superset_redis_cache_host        = module.database.superset_redis_cache_host
   cloud_sql_instance_name          = module.database.cloud_sql_instance_name
-  kubernetes_service_account_id    = google_service_account.kubernetes_sa.id
+  kubernetes_service_account_id    = google_service_account.kubernetes_sa.name
 
   depends_on = [
     google_project_service.apis,
