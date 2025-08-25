@@ -6,14 +6,6 @@ resource "google_project_iam_member" "superset_cloudsql_client" {
   member  = "serviceAccount:${var.kubernetes_service_account_email}"
 }
 
-
-resource "google_project_iam_member" "superset_cloudsql_client" {
-  project = var.project_id
-  role    = "roles/cloudsql.client"
-  member  = "serviceAccount:${var.kubernetes_service_account_email}"
-}
-
-
 # Create a namespace for Superset
 resource "kubernetes_namespace" "superset_namespace" {
   metadata {
