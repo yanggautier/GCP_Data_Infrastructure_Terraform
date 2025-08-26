@@ -109,7 +109,7 @@ resource "helm_release" "superset" {
     },
     {
       name  = "configOverrides.configs"
-      value = "SECRET_KEY = 'la_valeur_de_votre_cle_secrete_ici'"
+      value = "SECRET_KEY = 'zQXkwoNO8OnAKr15R6xEp0CNDr8P1t0dDgVPMA/9OO5OhXQfp6rWYGRW'"
     },
     {
       name  = "redis.enabled"
