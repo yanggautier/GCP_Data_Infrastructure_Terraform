@@ -84,14 +84,14 @@ resource "kubernetes_config_map" "superset_config" {
 }
 
 
+
 resource "kubernetes_secret" "superset_secret_key" {
   metadata {
     name      = "superset-secret-key"
     namespace = var.superset_namespace
   }
   data = {
-    # Replace the value with your generated key
-    SECRET_KEY = base64encode("your_secure_random_string_here")
+    SECRET_KEY = base64encode("zQXkwoNO8OnAKr15R6xEp0CNDr8P1t0dDgVPMA/9OO5OhXQfp6rWYGRW")
   }
 }
 
