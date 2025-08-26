@@ -113,7 +113,7 @@ resource "helm_release" "superset" {
     },
     {
       name  = "externalDatabase.host"
-      value = "127.0.0.1"
+      value = var.cloud_sql_instance_name
     },
     {
       name  = "externalDatabase.database"
@@ -150,6 +150,14 @@ resource "helm_release" "superset" {
     {
       name  = "serviceAccount.name"
       value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
+    },
+    {
+      name  = "initContainer.env.DB_HOST"
+      value = var.cloud_sql_instance_name
+    },
+    {
+      name  = "initContainer.env.REDIS_HOST"
+      value = var.superset_redis_cache_host
     }
   ]
 }
