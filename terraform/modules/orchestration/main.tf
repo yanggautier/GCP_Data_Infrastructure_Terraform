@@ -200,10 +200,10 @@ resource "google_storage_bucket_object" "dbt_run_dag_file" {
   name   = "dags/dbt_run_dag.py"
   bucket = split("/", replace(google_composer_environment.dbt_orchestration.config[0].dag_gcs_prefix, "gs://", ""))[0]
   content = templatefile("${path.module}/../../dags/dbt_run_dag.py.tpl", {
-    dbt_namespace     = var.dbt_namespace
-    dbt_k8s_sa_name   = kubernetes_service_account.dbt_k8s_sa.metadata[0].name
-    dbt_default_image = "ghcr.io/dbt-labs/dbt-bigquery:latest"
-    dbt_custom_image  = "{{ var.region }}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.dbt_repo.name}/dbt:latest"
+    dbt_namespace              = var.dbt_namespace
+    dbt_k8s_sa_name            = kubernetes_service_account.dbt_k8s_sa.metadata[0].name
+    dbt_default_image          = "ghcr.io/dbt-labs/dbt-bigquery:latest"
+    dbt_custom_image           = "{{ var.region }}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.dbt_repo.name}/dbt:latest"
     cloud_composer_admin_email = var.cloud_composer_admin_email
   })
 

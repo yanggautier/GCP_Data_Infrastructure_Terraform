@@ -33,51 +33,51 @@ variable "kubernetes_service_account_id" {
 
 variable "superset_request_cpu" {
   description = "Superset container requests cpu in Kubernetes"
-  type = string
-  default = "500m"
+  type        = string
+  default     = "500m"
 }
 
 variable "superset_request_memory" {
   description = "Superset container requests memory in Kubernetes"
-  type = string
-  default = "1Gi"
+  type        = string
+  default     = "1Gi"
 }
 
 variable "superset_limit_cpu" {
   description = "Superset container limits cpu in Kubernetes"
-  type = string
-  default = "1000m"
+  type        = string
+  default     = "1000m"
 }
 
 variable "superset_limit_memory" {
   description = "Superset container limits memory in Kubernetes"
-  type = string
-  default = "2Gi"
+  type        = string
+  default     = "2Gi"
 }
 
 # ---------------------------------- Proxy configuration variables ------------------------------
 variable "proxy_request_cpu" {
   description = "Cloud sql proxy container request cpu in Kubernetes"
-  type = string
-  default = "100m"
+  type        = string
+  default     = "100m"
 }
 
 variable "proxy_request_memory" {
   description = "Cloud sql proxy container request memory in Kubernetes"
-  type = string
-  default = "128Mi"
+  type        = string
+  default     = "128Mi"
 }
 
 variable "proxy_limit_cpu" {
   description = "Cloud sql proxy container request cpu in Kubernetes"
-  type = string
-  default = "200m"
+  type        = string
+  default     = "200m"
 }
 
 variable "proxy_limit_memory" {
   description = "Cloud sql proxy container request cpu in Kubernetes"
-  type = string
-  default = "256Mi"
+  type        = string
+  default     = "256Mi"
 }
 
 # ------------------------- Cloud SQL variables---------------------------------- 
@@ -86,23 +86,23 @@ variable "cloud_sql_instance_name" {
   type        = string
 }
 
-variable "superset_database_user_name"{
+variable "superset_database_user_name" {
   description = "Cloud SQL PostgreSQL database user name for Superset"
-  type = string
+  type        = string
 }
 
-variable "superset_db_password"{
+variable "superset_db_password" {
   description = "Cloud SQL PostgreSQL database password for Superset"
-  type = string
+  type        = string
 }
 
-variable "superset_database_name"{
+variable "superset_database_name" {
   description = "Cloud SQL PostgreSQL database name for Superset"
-  type = string
+  type        = string
 }
 
 # --------------------------- Memorystore variables -----------------------------------
 variable "superset_redis_cache_host" {
   description = "Host of Redis Memorystore"
-  type = string
+  type        = string
 }

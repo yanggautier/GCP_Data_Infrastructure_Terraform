@@ -84,7 +84,7 @@ resource "kubernetes_config_map" "superset_config" {
 }
 
 resource "helm_release" "superset" {
-  name = "superset"
+  name       = "superset"
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
@@ -107,28 +107,28 @@ resource "helm_release" "superset" {
     value = "false"
   }
   set {
-      name  = "externalDatabase.host"
-      value = "127.0.0.1" 
+    name  = "externalDatabase.host"
+    value = "127.0.0.1"
   }
   set {
-      name  = "externalDatabase.port"
-      value = "5432"
+    name  = "externalDatabase.port"
+    value = "5432"
   }
   set {
-      name  = "externalDatabase.user"
-      value = var.superset_database_user_name
+    name  = "externalDatabase.user"
+    value = var.superset_database_user_name
   }
   set {
     name  = "externalDatabase.passwordSecret"
     value = kubernetes_secret.superset_db_credentials.metadata[0].name
   }
   set {
-      name  = "cloudsql.enabled"
-      value = "true"
+    name  = "cloudsql.enabled"
+    value = "true"
   }
   set {
-      name  = "cloudsql.instances"
-      value = var.cloud_sql_instance_name
+    name  = "cloudsql.instances"
+    value = var.cloud_sql_instance_name
   }
   set {
     name  = "redis.enabled"

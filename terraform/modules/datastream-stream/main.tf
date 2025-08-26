@@ -19,7 +19,7 @@ resource "google_datastream_stream" "postgres_to_bigquery_stream" {
       }
     }
   }
-  
+
   destination_config {
     # Reference to destination profile
     destination_connection_profile = var.destination_connection_profile_object.id
