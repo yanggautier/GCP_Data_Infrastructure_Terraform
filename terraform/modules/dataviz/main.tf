@@ -88,77 +88,28 @@ resource "helm_release" "superset" {
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
-  version    = "0.15.0" # Vérifie la dernière version sur ArtifactHub
+  version    = "0.15.0"
 
   set = [
-    {
-      name  = "autoscaling.enabled"
-      value = "true"
-    },
-    {
-      name  = "autoscaling.minReplicas"
-      value = "1"
-    },
-    {
-      name  = "autoscaling.maxReplicas"
-      value = "3"
-    },
-    {
-      name  = "postgresql.enabled"
-      value = "false"
-    },
-    {
-      name  = "redis.enabled"
-      value = "false"
-    },
-    {
-      name  = "externalDatabase.host"
-      value = var.cloud_sql_instance_name
-    },
-    {
-      name  = "externalDatabase.database"
-      value = var.superset_database_name
-    },
-    {
-      name  = "externalDatabase.port"
-      value = "5432"
-    },
-    {
-      name  = "externalDatabase.user"
-      value = var.superset_database_user_name
-    },
-    {
-      name  = "externalDatabase.passwordSecret"
-      value = kubernetes_secret.superset_db_credentials.metadata[0].name
-    },
-    {
-      name  = "cloudsql.enabled"
-      value = "true"
-    },
-    {
-      name  = "cloudsql.instances"
-      value = var.cloud_sql_instance_name
-    },
-    {
-      name  = "externalRedis.host"
-      value = var.superset_redis_cache_host
-    },
-    {
-      name  = "externalRedis.port"
-      value = "6379"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
-    },
-    {
-      name  = "initContainer.env.DB_HOST"
-      value = var.cloud_sql_instance_name
-    },
-    {
-      name  = "initContainer.env.REDIS_HOST"
-      value = var.superset_redis_cache_host
-    }
+    { name = "postgresql.enabled", value = "false" },
+    { name = "redis.enabled", value = "false" },
+
+    { name = "externalDatabase.host", value = var.cloud_sql_instance_name },
+    { name = "externalDatabase.port", value = "5432" },
+    { name = "externalDatabase.user", value = var.superset_database_user_name },
+    { name = "externalDatabase.passwordSecret", value = kubernetes_secret.superset_db_credentials.metadata[0].name },
+    { name = "externalDatabase.database", value = var.superset_database_name },
+
+    { name = "externalRedis.host", value = var.superset_redis_cache_host },
+    { name = "externalRedis.port", value = "6379" },
+    { name = "externalRedis.passwordSecret", value = kubernetes_secret.superset_redis_credentials.metadata[0].name },
+
+    { name = "cloudsql.enabled", value = "true" },
+    { name = "cloudsql.instances", value = var.cloud_sql_instance_name },
+    { name = "serviceAccount.name", value = kubernetes_service_account.superset_k8s_sa.metadata[0].name },
+
+    { name = "initContainer.env.DB_HOST", value = var.cloud_sql_instance_name },
+    { name = "initContainer.env.REDIS_HOST", value = var.superset_redis_cache_host }
   ]
 }
 /*
