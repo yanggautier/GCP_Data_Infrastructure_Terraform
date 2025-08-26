@@ -243,7 +243,7 @@ provider "kubernetes" {
 
 # Use Helm provider
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = provider.kubernetes.host
     token                  = provider.kubernetes.token
     cluster_ca_certificate = provider.kubernetes.cluster_ca_certificate
