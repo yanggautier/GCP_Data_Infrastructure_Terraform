@@ -83,6 +83,18 @@ resource "kubernetes_config_map" "superset_config" {
   }
 }
 
+
+resource "kubernetes_secret" "superset_secret_key" {
+  metadata {
+    name      = "superset-secret-key"
+    namespace = var.superset_namespace
+  }
+  data = {
+    # Replace the value with your generated key
+    SECRET_KEY = base64encode("your_secure_random_string_here")
+  }
+}
+
 resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
@@ -94,6 +106,10 @@ resource "helm_release" "superset" {
    {
       name  = "postgresql.enabled"
       value = "true"
+    },
+    {
+      name  = "secret.SECRET_KEY"
+      value = kubernetes_secret.superset_secret_key.metadata[0].name
     },
     {
       name  = "redis.enabled"
