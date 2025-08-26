@@ -90,58 +90,60 @@ resource "helm_release" "superset" {
   namespace  = var.superset_namespace
   version    = "0.12.10" # Vérifie la dernière version sur ArtifactHub
 
-  set {
-    name  = "autoscaling.enabled"
-    value = "true"
-  }
-  set {
-    name  = "autoscaling.minReplicas"
-    value = "1"
-  }
-  set {
-    name  = "autoscaling.maxReplicas"
-    value = "3"
-  }
-  set {
-    name  = "postgresql.enabled"
-    value = "false"
-  }
-  set {
-    name  = "externalDatabase.host"
-    value = "127.0.0.1"
-  }
-  set {
-    name  = "externalDatabase.port"
-    value = "5432"
-  }
-  set {
-    name  = "externalDatabase.user"
-    value = var.superset_database_user_name
-  }
-  set {
-    name  = "externalDatabase.passwordSecret"
-    value = kubernetes_secret.superset_db_credentials.metadata[0].name
-  }
-  set {
-    name  = "cloudsql.enabled"
-    value = "true"
-  }
-  set {
-    name  = "cloudsql.instances"
-    value = var.cloud_sql_instance_name
-  }
-  set {
-    name  = "redis.enabled"
-    value = "false"
-  }
-  set {
-    name  = "configOverrides.redis_host"
-    value = var.superset_redis_cache_host
-  }
-  set {
-    name  = "serviceAccount.name"
-    value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
-  }
+  set = [
+    {
+      name  = "autoscaling.enabled"
+      value = "true"
+    },
+    {
+      name  = "autoscaling.minReplicas"
+      value = "1"
+    },
+    {
+      name  = "autoscaling.maxReplicas"
+      value = "3"
+    },
+    {
+      name  = "postgresql.enabled"
+      value = "false"
+    },
+    {
+      name  = "externalDatabase.host"
+      value = "127.0.0.1"
+    },
+    {
+      name  = "externalDatabase.port"
+      value = "5432"
+    },
+    {
+      name  = "externalDatabase.user"
+      value = var.superset_database_user_name
+    },
+    {
+      name  = "externalDatabase.passwordSecret"
+      value = kubernetes_secret.superset_db_credentials.metadata[0].name
+    },
+    {
+      name  = "cloudsql.enabled"
+      value = "true"
+    },
+    {
+      name  = "cloudsql.instances"
+      value = var.cloud_sql_instance_name
+    },
+    {
+      name  = "redis.enabled"
+      value = "false"
+    },
+    {
+      name  = "configOverrides.redis_host"
+      value = var.superset_redis_cache_host
+    },
+    {
+      name  = "serviceAccount.name"
+      value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
+    }
+  ]
 }
 /*
 # Create a Superset Kubernetes deployment with Cloud SQL proxy as sidecar
