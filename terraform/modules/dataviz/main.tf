@@ -102,7 +102,6 @@ resource "helm_release" "superset" {
 
     { name = "externalRedis.host", value = var.superset_redis_cache_host },
     { name = "externalRedis.port", value = "6379" },
-    { name = "externalRedis.passwordSecret", value = kubernetes_secret.superset_redis_credentials.metadata[0].name },
 
     { name = "cloudsql.enabled", value = "true" },
     { name = "cloudsql.instances", value = var.cloud_sql_instance_name },
