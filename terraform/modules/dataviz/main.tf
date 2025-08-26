@@ -88,7 +88,7 @@ resource "helm_release" "superset" {
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
-  version    = "0.12.10" # Vérifie la dernière version sur ArtifactHub
+  version    = "0.15.0" # Vérifie la dernière version sur ArtifactHub
 
   set = [
     {
@@ -108,8 +108,16 @@ resource "helm_release" "superset" {
       value = "false"
     },
     {
+      name  = "redis.enabled"
+      value = "false"
+    },
+    {
       name  = "externalDatabase.host"
       value = "127.0.0.1"
+    },
+    {
+      name  = "externalDatabase.database"
+      value = var.superset_database_name
     },
     {
       name  = "externalDatabase.port"
@@ -132,12 +140,12 @@ resource "helm_release" "superset" {
       value = var.cloud_sql_instance_name
     },
     {
-      name  = "redis.enabled"
-      value = "false"
+      name  = "externalRedis.host"
+      value = var.superset_redis_cache_host
     },
     {
-      name  = "configOverrides.redis_host"
-      value = var.superset_redis_cache_host
+      name  = "externalRedis.port"
+      value = "6379"
     },
     {
       name  = "serviceAccount.name"
