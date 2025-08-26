@@ -114,7 +114,11 @@ resource "helm_release" "superset" {
     {
       name  = "redis.enabled"
       value = "true"
-    }
+    },
+    {
+      name  = "extra_requirements"
+      value = "[\"psycopg2-binary\"]"
+    },
   ]
 
   /*
