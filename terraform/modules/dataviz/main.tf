@@ -172,8 +172,9 @@ resource "helm_release" "superset" {
       value = var.superset_redis_cache_host
     }
   ]
+  */
 }
-*/
+
 /*
 # Create a Superset Kubernetes deployment with Cloud SQL proxy as sidecar
 resource "kubernetes_deployment" "superset" {
