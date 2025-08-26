@@ -22,3 +22,4 @@ output "superset_redis_cache_host" {
   description = "Memorystore redis instance host"
   value = google_redis_instance.superset_redis_cache.host
 }
+

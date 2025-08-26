@@ -229,10 +229,20 @@ resource "google_container_cluster" "kubernetes_cluster" {
 
 data "google_client_config" "default" {}
 
+# Use Kubernetes provider
 provider "kubernetes" {
   host                   = "https://${google_container_cluster.kubernetes_cluster.endpoint}"
   token                  = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(google_container_cluster.kubernetes_cluster.master_auth[0].cluster_ca_certificate)
+}
+
+# Use Helm provider
+provider "helm" {
+  kubernetes {
+    host                   = "https://${google_container_cluster.kubernetes_cluster.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(google_container_cluster.kubernetes_cluster.master_auth[0].cluster_ca_certificate)
+}
 }
 
 # Module for Cloud Composer and GKE

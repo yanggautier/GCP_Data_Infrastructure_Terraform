@@ -83,6 +83,67 @@ resource "kubernetes_config_map" "superset_config" {
   }
 }
 
+resource "helm_release" "superset" {
+  name = "superset"
+  repository = "https://apache.github.io/superset"
+  chart      = "superset"
+  namespace  = var.superset_namespace
+  version    = "0.12.10" # Vérifie la dernière version sur ArtifactHub
+
+  set {
+    name  = "autoscaling.enabled"
+    value = "true"
+  }
+  set {
+    name  = "autoscaling.minReplicas"
+    value = "1"
+  }
+  set {
+    name  = "autoscaling.maxReplicas"
+    value = "3"
+  }
+  set {
+    name  = "postgresql.enabled"
+    value = "false"
+  }
+  set {
+      name  = "externalDatabase.host"
+      value = "127.0.0.1" 
+  }
+  set {
+      name  = "externalDatabase.port"
+      value = "5432"
+  }
+  set {
+      name  = "externalDatabase.user"
+      value = var.superset_database_user_name
+  }
+  set {
+    name  = "externalDatabase.passwordSecret"
+    value = kubernetes_secret.superset_db_credentials.metadata[0].name
+  }
+  set {
+      name  = "cloudsql.enabled"
+      value = "true"
+  }
+  set {
+      name  = "cloudsql.instances"
+      value = var.cloud_sql_instance_name
+  }
+  set {
+    name  = "redis.enabled"
+    value = "false"
+  }
+  set {
+    name  = "configOverrides.redis_host"
+    value = var.superset_redis_cache_host
+  }
+  set {
+    name  = "serviceAccount.name"
+    value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
+  }
+}
+/*
 # Create a Superset Kubernetes deployment with Cloud SQL proxy as sidecar
 resource "kubernetes_deployment" "superset" {
   metadata {
@@ -112,102 +173,6 @@ resource "kubernetes_deployment" "superset" {
       spec {
         service_account_name = kubernetes_service_account.superset_k8s_sa.metadata[0].name
 
-        /*
-        init_container {
-          name  = "superset-init"
-          image = "apache/superset:3.1.0"  # Use specific stable version
-                command = ["sh", "-c"]
-                args = [
-                  <<-EOT
-                  echo "Starting Superset database initialization..."
-                  
-                  # Wait for Cloud SQL proxy
-                  echo "Waiting for Cloud SQL proxy..."
-                  for i in $(seq 1 60); do
-                    if nc -z 127.0.0.1 5432 2>/dev/null; then
-                      echo "Cloud SQL proxy is ready!"
-                      break
-                    else
-                      echo "Waiting for Cloud SQL proxy... attempt $i/60"
-                      sleep 5
-                    fi
-                    if [ $i -eq 60 ]; then
-                      echo "ERROR: Cloud SQL proxy not ready after 300 seconds"
-                      exit 1
-                    fi
-                  done
-                  
-                  # Initialize Superset database
-                  echo "Initializing Superset database..."
-                  superset db upgrade
-                  
-                  # Create admin user (optional, comment out if not needed)
-                  # superset fab create-admin \
-                  #   --username admin \
-                  #   --firstname Superset \
-                  #   --lastname Admin \
-                  #   --email admin@superset.com \
-                  #   --password admin
-                  
-                  # Initialize Superset
-                  superset init
-                  
-                  echo "Superset initialization completed successfully!"
-                  EOT
-                ]
-                  
-          env {
-            name = "SUPERSET_CONFIG_PATH"
-            value = "/app/superset_config.py"
-          }
-          
-          # FIXED: Add all database connection environment variables
-          env {
-            name = "DATABASE_USER"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.superset_db_credentials.metadata[0].name
-                key  = "username"
-              }
-            }
-          }
-          
-          env {
-            name = "DATABASE_PASSWORD"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.superset_db_credentials.metadata[0].name
-                key  = "password"
-              }
-            }
-          }
-          
-          env {
-            name = "DATABASE_NAME"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.superset_db_credentials.metadata[0].name
-                key  = "database"
-              }
-            }
-          }
-
-          env {
-            name  = "DATABASE_HOST"
-            value = "127.0.0.1"
-          }
-
-          env {
-            name  = "DATABASE_PORT"
-            value = "5432"
-          }
-
-          volume_mount {
-            name       = "superset-config"
-            mount_path = "/app"
-          }
-        }
-        */
         container {
           name  = "superset"
           image = "apache/superset:3.1.0"
@@ -406,7 +371,7 @@ resource "kubernetes_service" "superset_service" {
     type = "LoadBalancer"  # Or "ClusterIP" if you use a ingress
   }
 }
-
+*/
 /*
 # Optionnel : if you want to expose Superset to a domain name with static IP 
 resource "kubernetes_ingress_v1" "superset_ingress" {
