@@ -108,8 +108,8 @@ resource "helm_release" "superset" {
       value = "true"
     },
     {
-      name  = "secret.SECRET_KEY"
-      value = kubernetes_secret.superset_secret_key.metadata[0].name
+      name  = "configOverrides.configs"
+      value = "SECRET_KEY = 'la_valeur_de_votre_cle_secrete_ici'"
     },
     {
       name  = "redis.enabled"
