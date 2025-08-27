@@ -125,7 +125,7 @@ resource "helm_release" "superset" {
     # Utiliser votre image personnalisée
     {
       name  = "image.repository"
-      value = docker_image.superset_custom_image.name
+      value = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/superset-custom"
     },
     {
       name  = "image.tag"
