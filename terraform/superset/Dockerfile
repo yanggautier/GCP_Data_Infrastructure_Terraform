@@ -11,7 +11,7 @@ RUN pip install \
     google-cloud-bigquery
 
 # Vérifier que l'installation a réussi
-RUN python -c "import psycopg2; print('psycopg2 installed successfully')"
+RUN python "import psycopg2; print('psycopg2 installed successfully')"
 
 # Revenir à l'utilisateur superset
 USER superset
