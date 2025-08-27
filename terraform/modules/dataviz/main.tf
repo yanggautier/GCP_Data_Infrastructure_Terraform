@@ -115,7 +115,7 @@ resource "helm_release" "superset" {
           command = ["/bin/bash"]
           args = [
             "-c",
-            "/app/.venv/bin/pip install psycopg2-binary google-cloud-bigquery pandas numpy"
+            "/app/.venv/bin/pip install psycopg2-binary google-cloud-bigquery pandas numpy celery"
           ]
           volumeMounts = [
             {
@@ -139,8 +139,32 @@ resource "helm_release" "superset" {
           mountPath = "/app/.venv"
         }
       ]
+      /*
+      extraVolumes = [
+        {
+          name = "requirements"
+          configMap = {
+            name = "superset-requirements"
+          }
+        }
+      ]
+      
+      extraVolumeMounts = [
+        {
+          name      = "requirements"
+          mountPath = "/app/requirements"
+          readOnly  = true
+        }
+      ]
+      
+      bootstrapScript = <<-EOF
+        #!/bin/bash
+        pip install -r /app/requirements/requirements.txt
+        exec /usr/bin/run-server.sh
+        EOF
     })
   ]
+  */
   set = [
    {
       name  = "postgresql.enabled"
