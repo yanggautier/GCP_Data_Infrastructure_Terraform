@@ -80,12 +80,6 @@ resource "docker_image" "superset_custom_image" {
   }
 }
 
-# Get image name
-resource "docker_registry_image" "superset_image" {
-  name = docker_image.superset_custom_image.name
-}
-
-
 /*
 # ConfigMap for Superset configuration
 resource "kubernetes_config_map" "superset_config" {
@@ -131,7 +125,7 @@ resource "helm_release" "superset" {
     # Utiliser votre image personnalisée
     {
       name  = "image.repository"
-      value = docker_registry_image.superset_image.name
+      value = docker_image.superset_custom_image.name
     },
     {
       name  = "image.tag"
