@@ -106,30 +106,39 @@ resource "helm_release" "superset" {
 
   depends_on = [kubernetes_config_map.superset_requirements]
 
-  values = [
+ values = [
     yamlencode({
+      initContainers = [
+        {
+          name  = "install-psycopg2"
+          image = "apache/superset:latest"
+          command = ["/bin/bash"]
+          args = [
+            "-c",
+            "/app/.venv/bin/pip install psycopg2-binary google-cloud-bigquery pandas numpy"
+          ]
+          volumeMounts = [
+            {
+              name      = "superset-venv"
+              mountPath = "/app/.venv"
+            }
+          ]
+        }
+      ]
+      
       extraVolumes = [
         {
-          name = "requirements"
-          configMap = {
-            name = "superset-requirements"
-          }
+          name = "superset-venv"
+          emptyDir = {}
         }
       ]
       
       extraVolumeMounts = [
         {
-          name      = "requirements"
-          mountPath = "/app/requirements"
-          readOnly  = true
+          name      = "superset-venv"
+          mountPath = "/app/.venv"
         }
       ]
-      
-      bootstrapScript = <<-EOF
-        #!/bin/bash
-        pip install -r /app/requirements/requirements.txt
-        exec /usr/bin/run-server.sh
-        EOF
     })
   ]
   set = [
