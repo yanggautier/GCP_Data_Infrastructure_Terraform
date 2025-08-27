@@ -2,7 +2,7 @@ terraform {
   required_providers {
     docker = {
       source  = "docker/docker"
-      version = "~> 2.23.0"
+      version = "~> 2.13.0"
     }
   }
 }
