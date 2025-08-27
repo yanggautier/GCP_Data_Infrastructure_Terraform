@@ -139,7 +139,11 @@ resource "helm_release" "superset" {
           mountPath = "/app/.venv"
         }
       ]
-      /*
+    })
+  ]
+  /*
+  values = [
+    yamlencode({
       extraVolumes = [
         {
           name = "requirements"
