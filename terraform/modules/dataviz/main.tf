@@ -63,6 +63,7 @@ resource "random_string" "superset_secret_key" {
   override_special = "!#$%^&*()-_=+[]{}|:<>?/."
 }
 
+/*
 # ConfigMap for Superset configuration
 resource "kubernetes_config_map" "superset_config" {
   metadata {
@@ -82,7 +83,7 @@ resource "kubernetes_config_map" "superset_config" {
     })
   }
 }
-
+*/
 
 
 resource "kubernetes_secret" "superset_secret_key" {
