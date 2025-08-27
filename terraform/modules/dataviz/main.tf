@@ -85,24 +85,12 @@ resource "kubernetes_config_map" "superset_config" {
 }
 */
 
-
-resource "kubernetes_secret" "superset_secret_key" {
-  metadata {
-    name      = "superset-secret-key"
-    namespace = var.superset_namespace
-  }
-  data = {
-    SECRET_KEY = base64encode("zQXkwoNO8OnAKr15R6xEp0CNDr8P1t0dDgVPMA/9OO5OhXQfp6rWYGRW")
-  }
-}
-
 resource "kubernetes_config_map" "superset_requirements" {
   metadata {
     name      = "superset-requirements"
     namespace = var.superset_namespace
   }
 
-  
 
   data = {
     "requirements.txt" = file("${path.module}/../../superset/requirements.txt")
@@ -158,8 +146,8 @@ resource "helm_release" "superset" {
       value = "true"
     },
     {
-      name  = "extra_requirements"
-      value = "[\"psycopg2-binary\"]"
+      name  = "extraPipPackages"
+      value = "psycopg2-binary google-cloud-bigquery pandas numpy"
     },
   ]
 
