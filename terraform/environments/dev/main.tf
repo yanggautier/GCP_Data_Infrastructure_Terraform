@@ -296,6 +296,8 @@ module "dataviz" {
   superset_redis_cache_host        = module.database.superset_redis_cache_host
   cloud_sql_instance_name          = module.database.cloud_sql_instance_name
   kubernetes_service_account_id    = google_service_account.kubernetes_sa.id
+  repository_id                    = module.orchestration.repository_id
+  repository_name                  = module.orchestration.repository_name
 
   depends_on = [
     google_project_service.apis,

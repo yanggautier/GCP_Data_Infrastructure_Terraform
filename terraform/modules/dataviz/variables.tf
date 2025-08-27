@@ -106,3 +106,14 @@ variable "superset_redis_cache_host" {
   description = "Host of Redis Memorystore"
   type        = string
 }
+
+# --------------------------- Artifact Repositoy variables -----------------------------------
+variable "repository_id" {
+  description = "Artifact repository id"
+  type        = string
+}
+
+variable "repository_name" {
+  description = "Artifact repository name"
+  type        = string
+}

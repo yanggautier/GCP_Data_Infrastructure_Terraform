@@ -58,10 +58,24 @@ resource "kubernetes_secret" "superset_db_credentials" {
 
 # Generate Superset secret key 
 resource "random_string" "superset_secret_key" {
-  length  = 42
-  special = true
+  length           = 42
+  special          = true
   override_special = "!#$%^&*()-_=+[]{}|:<>?/."
 }
+
+# Build a custom Superset Dockeer image
+resource "docker_image" "superset_custom_image" {
+  name = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/superset-custom:latest"
+  build {
+    context = "${path.module}/../../superset"
+  }
+}
+
+# Get image name
+resource "docker_registry_image" "superset_image" {
+  name = docker_image.superset_custom_image.name
+}
+
 
 /*
 # ConfigMap for Superset configuration
@@ -105,6 +119,16 @@ resource "helm_release" "superset" {
   version    = "0.15.0"
 
   set = [
+    # Utiliser votre image personnalisée
+    {
+      name  = "image.repository"
+      value = docker_registry_image.superset_image.name
+    },
+    {
+      name  = "image.tag"
+      value = "latest"
+    },
+    # Configuration PostgreSQL
     {
       name  = "postgresql.enabled"
       value = "true"
@@ -115,29 +139,26 @@ resource "helm_release" "superset" {
     },
     {
       name  = "postgresql.auth.username"
-      value = "superset"  
+      value = "superset"
     },
     {
       name  = "postgresql.auth.password"
       value = "superset"
     },
+    # Configuration Redis
     {
       name  = "redis.enabled"
       value = "true"
     },
+    # Configuration Superset
     {
-      name  = "configOverrides.SECRET_KEY"
-      value = random_string.superset_secret_key.result
+      name  = "configOverrides.configs"
+      value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
     },
     {
       name  = "extraEnv.SUPERSET_LOAD_EXAMPLES"
       value = "no"
     }
-  ]
-
-  # Utilisation d'un fichier values.yaml pour la configuration des initContainers
-  values = [
-    file("${path.module}/../../superset/superset-values.yaml")
   ]
 }
 
