@@ -39,10 +39,6 @@ provider "google" {
   region  = var.region
 }
 
-
-provider "docker" {}
-
-
 # Include all shared local variables
 # Remplacer votre bloc locals actuel par :
 locals {
@@ -242,6 +238,15 @@ resource "google_container_cluster" "kubernetes_cluster" {
 }
 
 data "google_client_config" "default" {}
+
+# Use Google provider with registry auth
+provider "docker" {
+    registry_auth {
+    address  = "${var.region}-docker.pkg.dev"
+    username = "oauth2accesstoken"
+    password = data.google_client_config.default.access_token
+  }
+}
 
 # Use Kubernetes provider
 provider "kubernetes" {
