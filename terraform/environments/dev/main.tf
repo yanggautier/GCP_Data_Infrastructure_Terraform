@@ -18,7 +18,7 @@ terraform {
 
     docker = {
       source  = "docker/docker"
-      version = "~> 0.2"
+      version = "~> 2.23.0"
     }
 
     helm = {
