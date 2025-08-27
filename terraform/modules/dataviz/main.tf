@@ -58,9 +58,9 @@ resource "kubernetes_secret" "superset_db_credentials" {
 
 # Generate Superset secret key 
 resource "random_string" "superset_secret_key" {
-  length           = 16
-  special          = true
-  override_special = "!@#$%^&*"
+  length  = 42
+  special = true
+  override_special = "!#$%^&*()-_=+[]{}|:<>?/."
 }
 
 # ConfigMap for Superset configuration
@@ -95,6 +95,19 @@ resource "kubernetes_secret" "superset_secret_key" {
   }
 }
 
+resource "kubernetes_config_map" "superset_requirements" {
+  metadata {
+    name      = "superset-requirements"
+    namespace = var.superset_namespace
+  }
+
+  
+
+  data = {
+    "requirements.txt" = file("${path.module}/../../superset/requirements.txt")
+  }
+}
+
 resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
@@ -102,6 +115,33 @@ resource "helm_release" "superset" {
   namespace  = var.superset_namespace
   version    = "0.15.0" # Vérifie la dernière version sur ArtifactHub
 
+  depends_on = [kubernetes_config_map.superset_requirements]
+  
+  values = [
+    yamlencode({
+      extraVolumes = [
+        {
+          name = "requirements"
+          configMap = {
+            name = "superset-requirements"
+          }
+        }
+      ]
+      
+      extraVolumeMounts = [
+        {
+          name      = "requirements"
+          mountPath = "/app/requirements"
+          readOnly  = true
+        }
+      ]
+      
+      bootstrapScript = |
+        #!/bin/bash
+        pip install -r /app/requirements/requirements.txt
+        exec /usr/bin/run-server.sh
+    })
+  ]
   set = [
    {
       name  = "postgresql.enabled"
@@ -109,7 +149,7 @@ resource "helm_release" "superset" {
     },
     {
       name  = "configOverrides.configs"
-      value = "SECRET_KEY = 'zQXkwoNO8OnAKr15R6xEp0CNDr8P1t0dDgVPMA/9OO5OhXQfp6rWYGRW'"
+      value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
     },
     {
       name  = "redis.enabled"
