@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    docker = {
+      source  = "docker/docker"
+      version = "~> 2.23.0"
+    }
+  }
+}
+
 # ----------------- Configuration for Superset Deployment ---------------------
 # Add IAM permission to have access Cloud SQL
 resource "google_project_iam_member" "superset_cloudsql_client" {
