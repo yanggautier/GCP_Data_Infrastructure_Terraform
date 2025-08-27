@@ -1,0 +1,68 @@
+extraVolumes:
+  - name: requirements
+    configMap:
+      name: superset-requirements
+
+extraVolumeMounts:
+  - name: requirements
+    mountPath: /app/requirements
+    readOnly: true
+
+# Utiliser initContainer pour installer les dépendances
+initContainers:
+  - name: install-deps
+    image: apache/superset:latest
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        echo "Installing additional packages..."
+        /app/.venv/bin/pip install -r /app/requirements/requirements.txt
+        echo "Installation complete"
+    volumeMounts:
+      - name: requirements
+        mountPath: /app/requirements
+        readOnly: true
+      - name: superset-venv
+        mountPath: /app/.venv
+
+# Ajouter le volume pour partager l'environnement virtuel
+extraVolumes:
+  - name: requirements
+    configMap:
+      name: superset-requirements
+  - name: superset-venv
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: requirements
+    mountPath: /app/requirements
+    readOnly: true
+  - name: superset-venv
+    mountPath: /app/.venv
+
+# Configuration PostgreSQL
+postgresql:
+  enabled: true
+  auth:
+    database: superset
+    username: superset
+    password: superset
+
+# Configuration Redis
+redis:
+  enabled: true
+
+# Variables d'environnement
+extraEnv:
+  SUPERSET_LOAD_EXAMPLES: "no"
+  # S'assurer que l'environnement virtuel est dans le PATH
+  PATH: "/app/.venv/bin:$PATH"
+
+# Configuration pour les workers
+supersetWorker:
+  extraVolumeMounts:
+    - name: superset-venv
+      mountPath: /app/.venv
+  extraEnv:
+    PATH: "/app/.venv/bin:$PATH"

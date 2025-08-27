@@ -102,164 +102,43 @@ resource "helm_release" "superset" {
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
-  version    = "0.15.0" # Vérifie la dernière version sur ArtifactHub
+  version    = "0.15.0"
 
-  depends_on = [kubernetes_config_map.superset_requirements]
-
- values = [
-    yamlencode({
-      initContainers = [
-        {
-          name  = "install-psycopg2"
-          image = "apache/superset:latest"
-          command = ["/bin/bash"]
-          args = [
-            "-c",
-            "/app/.venv/bin/pip install psycopg2-binary google-cloud-bigquery pandas numpy celery"
-          ]
-          volumeMounts = [
-            {
-              name      = "superset-venv"
-              mountPath = "/app/.venv"
-            }
-          ]
-        }
-      ]
-      
-      extraVolumes = [
-        {
-          name = "superset-venv"
-          emptyDir = {}
-        }
-      ]
-      
-      extraVolumeMounts = [
-        {
-          name      = "superset-venv"
-          mountPath = "/app/.venv"
-        }
-      ]
-    })
-  ]
-  /*
-  values = [
-    yamlencode({
-      extraVolumes = [
-        {
-          name = "requirements"
-          configMap = {
-            name = "superset-requirements"
-          }
-        }
-      ]
-      
-      extraVolumeMounts = [
-        {
-          name      = "requirements"
-          mountPath = "/app/requirements"
-          readOnly  = true
-        }
-      ]
-      
-      bootstrapScript = <<-EOF
-        #!/bin/bash
-        pip install -r /app/requirements/requirements.txt
-        exec /usr/bin/run-server.sh
-        EOF
-    })
-  ]
-  */
   set = [
-   {
+    {
       name  = "postgresql.enabled"
       value = "true"
     },
     {
-      name  = "configOverrides.configs"
-      value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
+      name  = "postgresql.auth.database"
+      value = "superset"
+    },
+    {
+      name  = "postgresql.auth.username"
+      value = "superset"  
+    },
+    {
+      name  = "postgresql.auth.password"
+      value = "superset"
     },
     {
       name  = "redis.enabled"
       value = "true"
     },
     {
-      name  = "extraPipPackages"
-      value = "psycopg2-binary google-cloud-bigquery pandas numpy"
-    },
-  ]
-
-  /*
-  set = [
-    {
-      name  = "autoscaling.enabled"
-      value = "true"
+      name  = "configOverrides.SECRET_KEY"
+      value = random_string.superset_secret_key.result
     },
     {
-      name  = "autoscaling.minReplicas"
-      value = "1"
-    },
-    {
-      name  = "autoscaling.maxReplicas"
-      value = "3"
-    },
-    {
-      name  = "postgresql.enabled"
-      value = "false"
-    },
-    {
-      name  = "redis.enabled"
-      value = "false"
-    },
-    {
-      name  = "externalDatabase.host"
-      value = var.cloud_sql_instance_name
-    },
-    {
-      name  = "externalDatabase.database"
-      value = var.superset_database_name
-    },
-    {
-      name  = "externalDatabase.port"
-      value = "5432"
-    },
-    {
-      name  = "externalDatabase.user"
-      value = var.superset_database_user_name
-    },
-    {
-      name  = "externalDatabase.passwordSecret"
-      value = kubernetes_secret.superset_db_credentials.metadata[0].name
-    },
-    {
-      name  = "cloudsql.enabled"
-      value = "true"
-    },
-    {
-      name  = "cloudsql.instances"
-      value = var.cloud_sql_instance_name
-    },
-    {
-      name  = "externalRedis.host"
-      value = var.superset_redis_cache_host
-    },
-    {
-      name  = "externalRedis.port"
-      value = "6379"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
-    },
-    {
-      name  = "initContainer.env.DB_HOST"
-      value = var.cloud_sql_instance_name
-    },
-    {
-      name  = "initContainer.env.REDIS_HOST"
-      value = var.superset_redis_cache_host
+      name  = "extraEnv.SUPERSET_LOAD_EXAMPLES"
+      value = "no"
     }
   ]
-  */
+
+  # Utilisation d'un fichier values.yaml pour la configuration des initContainers
+  values = [
+    file("${path.module}/../../superset/superset-values.yaml")
+  ]
 }
 
 /*
