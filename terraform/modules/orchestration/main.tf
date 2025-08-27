@@ -65,9 +65,9 @@ resource "google_secret_manager_secret_version" "dbt_profiles_version" {
 }
 
 resource "google_artifact_registry_repository_iam_member" "reader" {
-  project    = google_artifact_registry_repository.superset_repo.project
-  location   = google_artifact_registry_repository.superset_repo.location
-  repository = google_artifact_registry_repository.superset_repo.name
+  project    = google_artifact_registry_repository.dbt_repo.project
+  location   = google_artifact_registry_repository.dbt_repo.location
+  repository = google_artifact_registry_repository.dbt_repo.name
   role       = "roles/artifactregistry.reader"
   member     = "serviceAccount:${var.kubernetes_service_account_email}"
 }
