@@ -17,8 +17,8 @@ terraform {
     }
 
     docker = {
-      source  = "docker/docker"
-      version = "2.23.0"
+      source  = "kreuzwerker/docker"
+      version = "2.23.1"
     }
 
     helm = {
