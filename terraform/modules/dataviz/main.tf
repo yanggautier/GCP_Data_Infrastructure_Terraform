@@ -116,7 +116,7 @@ resource "helm_release" "superset" {
   version    = "0.15.0" # Vérifie la dernière version sur ArtifactHub
 
   depends_on = [kubernetes_config_map.superset_requirements]
-  
+
   values = [
     yamlencode({
       extraVolumes = [
@@ -136,10 +136,11 @@ resource "helm_release" "superset" {
         }
       ]
       
-      bootstrapScript = |
+      bootstrapScript = <<-EOF
         #!/bin/bash
         pip install -r /app/requirements/requirements.txt
         exec /usr/bin/run-server.sh
+        EOF
     })
   ]
   set = [
