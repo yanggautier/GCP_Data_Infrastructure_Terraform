@@ -204,6 +204,7 @@ resource "google_project_iam_member" "cluster_admin_role" {
   member  = "serviceAccount:${google_service_account.gke_node_service_account.email}"
 }
 
+
 # Cluster GKE
 resource "google_container_cluster" "kubernetes_cluster" {
   name     = "kubernetes-cluster-${var.environment}"
