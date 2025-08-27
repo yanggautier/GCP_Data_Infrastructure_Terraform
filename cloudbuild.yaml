@@ -1,16 +1,4 @@
 steps:
-
-  - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
-    args: ['-c', 'gcloud auth configure-docker ${_REGION}-docker.pkg.dev']
-    id: auth_artifact_registry
-    
-
-  - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'bash'
-    args: ['-c', 'docker login -u _json_key_base64 -p "$(gcloud auth print-access-token)" us-central1-docker.pkg.dev']
-    waitFor: ['auth_artifact_registry']
-  
   - id: 'terraform-init'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
@@ -29,7 +17,6 @@ steps:
         
         terraform init
     dir: 'terraform/environments/dev'
-    waitFor: ['auth_artifact_registry']
 
   - id: 'terraform-validate'
     name: 'gcr.io/cloud-builders/gcloud'
