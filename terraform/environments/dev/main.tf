@@ -206,18 +206,6 @@ resource "google_project_iam_member" "cluster_admin_role" {
   member  = "serviceAccount:${google_service_account.gke_node_service_account.email}"
 }
 
-resource "google_service_account" "artifact_registry_writer" {
-  account_id   = "ar-writer-${var.environment}"
-  display_name = "Service account for writing to Artifact Registry"
-  project      = var.project_id
-}
-
-resource "google_project_iam_member" "ar_writer_role" {
-  project = var.project_id
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${google_service_account.artifact_registry_writer.email}"
-}
-
 # Cluster GKE
 resource "google_container_cluster" "kubernetes_cluster" {
   name     = "kubernetes-cluster-${var.environment}"
