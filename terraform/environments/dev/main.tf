@@ -16,6 +16,11 @@ terraform {
       source = "hashicorp/kubernetes"
     }
 
+    docker = {
+      source  = "docker/docker"
+      version = "~> 0.2"
+    }
+
     helm = {
       source  = "hashicorp/helm"
       version = ">= 2.0"
@@ -33,6 +38,8 @@ provider "google" {
   project = var.project_id
   region  = var.region
 }
+
+provider "docker" {}
 
 # Include all shared local variables
 # Remplacer votre bloc locals actuel par :
