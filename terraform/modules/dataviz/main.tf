@@ -76,7 +76,7 @@ resource "random_string" "superset_secret_key" {
 resource "docker_image" "superset_custom_image" {
   name = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/superset-custom:latest"
   build {
-    context = "${path.module}/../../superset"
+    path = "${path.module}/../../superset"
   }
 }
 
