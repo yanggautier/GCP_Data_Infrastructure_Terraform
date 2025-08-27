@@ -39,8 +39,6 @@ provider "google" {
   region  = var.region
 }
 
-provider "docker" {}
-
 # Include all shared local variables
 # Remplacer votre bloc locals actuel par :
 locals {
@@ -202,6 +200,26 @@ resource "google_project_iam_member" "cluster_admin_role" {
   project = var.project_id
   role    = "roles/container.admin"
   member  = "serviceAccount:${google_service_account.gke_node_service_account.email}"
+}
+
+resource "google_service_account" "artifact_registry_writer" {
+  account_id   = "ar-writer-${var.environment}"
+  display_name = "Service account for writing to Artifact Registry"
+  project      = var.project_id
+}
+
+resource "google_project_iam_member" "ar_writer_role" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.artifact_registry_writer.email}"
+}
+
+provider "docker" {
+  registry_auth {
+    address  = "${var.region}-docker.pkg.dev"
+    username = "_json_key"
+    password = file(google_service_account.artifact_registry_writer.key)
+  }
 }
 
 

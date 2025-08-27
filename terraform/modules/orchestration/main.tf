@@ -73,18 +73,6 @@ resource "google_artifact_registry_repository_iam_member" "reader" {
 }
 
 
-resource "google_service_account" "artifact_registry_writer" {
-  account_id   = "ar-writer-${var.environment}"
-  display_name = "Service account for writing to Artifact Registry"
-  project      = var.project_id
-}
-
-resource "google_project_iam_member" "ar_writer_role" {
-  project = var.project_id
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${google_service_account.artifact_registry_writer.email}"
-}
-
 # Name space for DBT
 resource "kubernetes_namespace" "dbt_namespace" {
   metadata {
