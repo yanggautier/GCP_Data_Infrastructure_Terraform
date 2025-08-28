@@ -159,10 +159,6 @@ resource "helm_release" "superset" {
       value = "true"
     },
     {
-      name  = "service.type"
-      value = "LoadBalancer"
-    },
-    {
       name  = "configOverrides.configs"
       value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
     }
