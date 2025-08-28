@@ -164,7 +164,7 @@ resource "helm_release" "superset" {
     },
     {
       name  = "service.port"
-      value = 8088
+      value = "8088"
     },
     {
       name  = "configOverrides.configs"
