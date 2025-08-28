@@ -128,14 +128,14 @@ resource "helm_release" "superset" {
 
   set = [
     # Utiliser votre image personnalisée
-    /*{
+    {
       name  = "image.repository"
       value = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/superset-custom"
     },
     {
       name  = "image.tag"
       value = "latest"
-    },*/
+    },
     # Configuration PostgreSQL
     {
       name  = "postgresql.enabled"
@@ -167,9 +167,6 @@ resource "helm_release" "superset" {
       name  = "extraEnv.SUPERSET_LOAD_EXAMPLES"
       value = "no"
     }
-  ]
-  values = [
-    file("${path.module}/../../superset/superset-values.yaml")
   ]
 }
 
