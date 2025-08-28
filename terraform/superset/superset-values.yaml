@@ -22,7 +22,7 @@ bootstrapScript: |
   uv pip install \
     authlib \
     psycopg2-binary \
-    mysqlclient \
+    google-cloud-bigquery \
 
   # Create bootstrap file if it doesn't exist
   if [ ! -f ~/bootstrap ]; then
@@ -44,3 +44,8 @@ redis:
 extraEnv:
   SUPERSET_LOAD_EXAMPLES: "no"
 
+service:
+  type: LoadBalancer
+  port: 8088
+  targetPort: 8088
+  annotations: {}

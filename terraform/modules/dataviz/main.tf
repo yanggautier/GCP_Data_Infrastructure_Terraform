@@ -159,14 +159,6 @@ resource "helm_release" "superset" {
       value = "true"
     },
     {
-      name  = "service.type"
-      value = "LoadBalancer"
-    },
-    {
-      name  = "service.port"
-      value = "8088"
-    },
-    {
       name  = "configOverrides.configs"
       value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
     }
