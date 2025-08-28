@@ -158,14 +158,13 @@ resource "helm_release" "superset" {
       name  = "redis.enabled"
       value = "true"
     },
-    # Configuration Superset
+    {
+      name  = "service.type"
+      value = "LoadBalancer"
+    },
     {
       name  = "configOverrides.configs"
       value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
-    },
-    {
-      name  = "extraEnv.SUPERSET_LOAD_EXAMPLES"
-      value = "no"
     }
   ]
   values = [
