@@ -185,4 +185,12 @@ kubectl edit namespace dbt
 
 # Force the delete
 kubectl delete namespace dbt --force --grace-period=0 --timeout=30s
+
+
+# Get services (IP and ports)
+ kubectl get svc -n namespace_name
+
+# Uninstall namespace wit Helm
+helm uninstall superset -n namespace_name
+
 ```

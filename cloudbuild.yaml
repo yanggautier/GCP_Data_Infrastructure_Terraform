@@ -72,6 +72,10 @@ steps:
       - 'TF_VAR_cloud_composer_admin_email=${_CLOUD_COMPOSER_ADMIN_EMAIL}'
       - 'TF_VAR_gke_master_ipv4_cidr_block=${_GKE_MASTER_IPV4_CIDR_BLOCK}'
       - 'TF_VAR_vpc_network_name=${_VPC_NETWORK_NAME}'
+      - 'TF_VAR_superset_admin_username=${_SUPERSET_ADMIN_USER}'
+      - 'TF_VAR_superset_admin_password=${_SUPERSET_ADMIN_PASSWORD}'
+      - 'TF_VAR_superset_admin_email=${_SUPERSET_ADMIN_EMAIL}'
+
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-validate']
 
@@ -111,6 +115,9 @@ steps:
       - 'TF_VAR_cloud_composer_admin_email=${_CLOUD_COMPOSER_ADMIN_EMAIL}'
       - 'TF_VAR_gke_master_ipv4_cidr_block=${_GKE_MASTER_IPV4_CIDR_BLOCK}'
       - 'TF_VAR_vpc_network_name=${_VPC_NETWORK_NAME}'
+      - 'TF_VAR_superset_admin_username=${_SUPERSET_ADMIN_USER}'
+      - 'TF_VAR_superset_admin_password=${_SUPERSET_ADMIN_PASSWORD}'
+      - 'TF_VAR_superset_admin_email=${_SUPERSET_ADMIN_EMAIL}'
     dir: 'terraform/environments/dev'
     waitFor: ['terraform-plan']
 
@@ -136,4 +143,6 @@ substitutions:
   _GKE_MASTER_IPV4_CIDR_BLOCK: '172.16.0.0/28'
   _CLOUD_COMPOSER_ADMIN_EMAIL: 'user-owner@example.com'
   _PRIVATE_POOL_NAME: 'private-pool' 
-
+  _SUPERSET_ADMIN_USER: 'admin'
+  _SUPERSET_ADMIN_PASSWORD: 'admin'
+  _SUPERSET_ADMIN_EMAIL: 'admin@example.com'
