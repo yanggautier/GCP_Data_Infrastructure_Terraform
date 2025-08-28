@@ -168,6 +168,10 @@ Show detail of a specific resource
 terraform state show resouce_type.resource_name
 ```
 
+Reformat all files in the project
+```bash
+terraform fmt -recursive
+```
 
 ## Commands for Kubernetes to delete dbt namespace when it can not be deleted
 ```bash
@@ -190,7 +194,19 @@ kubectl delete namespace dbt --force --grace-period=0 --timeout=30s
 # Get services (IP and ports)
  kubectl get svc -n namespace_name
 
+# Get ingress
+kubectl get ingress --namespace namespace_name
+
 # Uninstall namespace wit Helm
 helm uninstall superset -n namespace_name
+
+# Get deployments
+kubectl get deployments -n namespace_name
+
+# Get pods
+kubectl get pods -n namespace_name
+
+# Logs at a container
+kubect logs pod_id -n namespace_name -c container_name
 
 ```

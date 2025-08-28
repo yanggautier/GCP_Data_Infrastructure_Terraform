@@ -203,31 +203,31 @@ variable "cloud_composer_admin_email" {
 
 # ---------------------- Superset auth variables ------------------------------
 variable "superset_admin_username" {
-  description = "Username pour l'administrateur Superset"
+  description = "Superset admin username"
   type        = string
   default     = "admin"
 }
 
 variable "superset_admin_password" {
-  description = "Mot de passe pour l'administrateur Superset"
+  description = "Superset admin password"
   type        = string
   sensitive   = true
 }
 
 variable "superset_admin_firstname" {
-  description = "Prénom de l'administrateur Superset"
+  description = "Superset admin firstname"
   type        = string
   default     = "Admin"
 }
 
 variable "superset_admin_lastname" {
-  description = "Nom de l'administrateur Superset"
+  description = "Superset admin lastname"
   type        = string
   default     = "User"
 }
 
 variable "superset_admin_email" {
-  description = "Email de l'administrateur Superset"
+  description = "Superset admin email"
   type        = string
 }
 

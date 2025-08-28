@@ -312,6 +312,11 @@ module "dataviz" {
   kubernetes_service_account_id    = google_service_account.kubernetes_sa.id
   repository_id                    = module.orchestration.repository_id
   repository_name                  = module.orchestration.repository_name
+  superset_admin_email             = var.superset_admin_email
+  superset_admin_username          = var.superset_admin_username
+  superset_admin_firstname         = var.superset_admin_firstname
+  superset_admin_lastname          = var.superset_admin_lastname
+  superset_admin_password          = var.superset_admin_password
 
   depends_on = [
     google_project_service.apis,
