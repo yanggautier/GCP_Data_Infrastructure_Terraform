@@ -163,7 +163,7 @@ resource "helm_release" "superset" {
       value = "8088"
     },
     {
-      name  = "service.nodePort"
+      name  = "service.nodePort.http"
       value = "null"
     },
     # Configuration Redis
