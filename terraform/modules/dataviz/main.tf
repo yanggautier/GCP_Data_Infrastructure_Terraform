@@ -72,6 +72,7 @@ resource "random_string" "superset_secret_key" {
   override_special = "!#$%^&*()-_=+[]{}|:<>?/."
 }
 
+/*
 # Build a custom Superset Dockeer image
 resource "docker_image" "superset_custom_image" {
   name = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/superset-custom:latest"
@@ -85,7 +86,7 @@ resource "docker_registry_image" "superset_image" {
   name = docker_image.superset_custom_image.name
 }
 
-/*
+
 # ConfigMap for Superset configuration
 resource "kubernetes_config_map" "superset_config" {
   metadata {
@@ -152,6 +153,18 @@ resource "helm_release" "superset" {
     {
       name  = "postgresql.auth.password"
       value = "superset"
+    },
+    {
+      name  = "service.type"
+      value = "LoadBalancer"
+    },
+    {
+      name  = "service.port"
+      value = "8088"
+    },
+    {
+      name  = "service.nodePort"
+      value = "null"
     },
     # Configuration Redis
     {
