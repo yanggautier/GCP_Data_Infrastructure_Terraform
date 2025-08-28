@@ -112,13 +112,6 @@ variable "superset_service_port" {
   default     = 8088
 }
 
-# Variables générales
-variable "superset_namespace" {
-  description = "Namespace Kubernetes pour Superset"
-  type        = string
-  default     = "superset"
-}
-
 variable "superset_chart_version" {
   description = "Version du chart Helm Superset"
   type        = string
