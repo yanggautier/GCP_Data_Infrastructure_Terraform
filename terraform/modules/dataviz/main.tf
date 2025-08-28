@@ -125,10 +125,10 @@ resource "helm_release" "superset" {
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
-  version    = "0.15.0"
+  version    = var.superset_chart_version
 
   set = [
-    # Utiliser votre image personnalisée
+    # Custom Docker image
     /*{
       name  = "image.repository"
       value = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/superset-custom"
@@ -137,30 +137,57 @@ resource "helm_release" "superset" {
       name  = "image.tag"
       value = "latest"
     },*/
-    # Configuration PostgreSQL
+    # Superset Admin user
+    {
+      name  = "init.adminUser.username"
+      value = var.superset_admin_username
+    },
+    {
+      name  = "init.adminUser.password"
+      value = var.superset_admin_password
+    },
+    {
+      name  = "init.adminUser.firstname"
+      value = var.superset_admin_firstname
+    },
+    {
+      name  = "init.adminUser.lastname"
+      value = var.superset_admin_lastname
+    },
+    {
+      name  = "init.adminUser.email"
+      value = var.superset_admin_email
+    },
+    # PostgreSQL Configuration
     {
       name  = "postgresql.enabled"
       value = "true"
     },
+    /*
     {
       name  = "postgresql.auth.database"
-      value = "superset"
+      value = var.postgresql_database
     },
     {
       name  = "postgresql.auth.username"
-      value = "superset"
+      value = var.postgresql_username
     },
     {
       name  = "postgresql.auth.password"
-      value = "superset"
+      value = var.postgresql_password
     },
+    */
     {
       name  = "service.type"
       value = "LoadBalancer"
     },
     {
       name  = "service.port"
-      value = "8088"
+      value = var.superset_service_port
+    },
+    {
+      name  = "service.targetPort"
+      value = 8088
     },
     {
       name  = "service.nodePort.http"
@@ -172,6 +199,10 @@ resource "helm_release" "superset" {
       value = "true"
     },
     {
+      name  = "service.port"
+      value = var.superset_service_port
+    },
+    {
       name  = "configOverrides.configs"
       value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
     }
@@ -179,270 +210,7 @@ resource "helm_release" "superset" {
   values = [
     file("${path.module}/../../superset/superset-values.yaml")
   ]
+
+  wait    = true
+  timeout = 600
 }
-
-/*
-# Create a Superset Kubernetes deployment with Cloud SQL proxy as sidecar
-resource "kubernetes_deployment" "superset" {
-  metadata {
-    name      = "superset"
-    namespace = kubernetes_namespace.superset_namespace.metadata[0].name
-    labels = {
-      app = "superset"
-    }
-  }
-
-  spec {
-    replicas = 1
-    
-    selector {
-      match_labels = {
-        app = "superset"
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          app = "superset"
-        }
-      }
-
-      spec {
-        service_account_name = kubernetes_service_account.superset_k8s_sa.metadata[0].name
-
-        container {
-          name  = "superset"
-          image = "apache/superset:3.1.0"
-          # Add the init logic to the command/args of the main container
-          command = ["/bin/sh", "-c"]
-          args = [
-            <<-EOT
-            echo "Starting Superset pre-launch tasks..."
-            
-            # Wait for Cloud SQL proxy using a Python script
-            until python -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.settimeout(1); s.connect(('127.0.0.1', 5432)); s.close()" >/dev/null 2>&1; do
-                echo "Waiting for Cloud SQL proxy to start..."
-                sleep 2
-            done
-            echo "Cloud SQL proxy is ready! Starting database initialization..."
-
-            # Initialize Superset database
-            /usr/local/bin/superset db upgrade
-            /usr/local/bin/superset init
-
-            echo "Superset database initialization completed. Starting web server..."
-            
-            # Start the main Superset webserver process
-            /usr/local/bin/superset run -p 8088 --with-threads --reload --workers 4
-            EOT
-          ]
-          port {
-            container_port = 8088
-          }
-
-          env {
-            name  = "SUPERSET_CONFIG_PATH"
-            value = "/app/superset_config.py"
-          }
-          
-          env {
-            name = "DATABASE_USER"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.superset_db_credentials.metadata[0].name
-                key  = "username"
-              }
-            }
-          }
-          
-          env {
-            name = "DATABASE_PASSWORD"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.superset_db_credentials.metadata[0].name
-                key  = "password"
-              }
-            }
-          }
-          
-          env {
-            name = "DATABASE_NAME"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.superset_db_credentials.metadata[0].name
-                key  = "database"
-              }
-            }
-          }
-
-          env {
-            name  = "DATABASE_HOST"
-            value = "127.0.0.1"
-          }
-
-          env {
-            name  = "DATABASE_PORT"
-            value = "5432"
-          }
-
-          env {
-            name  = "REDIS_HOST"
-            value = var.superset_redis_cache_host
-          }
-
-          liveness_probe {
-            http_get {
-              path = "/health"
-              port = 8088
-            }
-            initial_delay_seconds = 180 
-            period_seconds        = 30
-            timeout_seconds       = 10
-            failure_threshold     = 5
-          }
-
-          readiness_probe {
-            http_get {
-              path = "/health"
-              port = 8088
-            }
-            initial_delay_seconds = 120 
-            period_seconds        = 15
-            timeout_seconds       = 5
-            failure_threshold     = 3
-          }
-
-          volume_mount {
-            name       = "superset-config"
-            mount_path = "/app"
-          }
-
-          resources {
-            requests = {
-              cpu    = var.superset_request_cpu
-              memory = var.superset_request_memory
-            }
-            limits = {
-              cpu    = var.superset_limit_cpu
-              memory = var.superset_limit_memory
-            }
-          }
-        }
-
-        container {
-          name  = "cloudsql-proxy"
-          image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0"
-          
-          args = [
-            "--structured-logs",
-            "--port=5432",
-            "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
-          ]
-
-          readiness_probe {
-            tcp_socket {
-              port = 5432
-            }
-            initial_delay_seconds = 10
-            period_seconds        = 5
-            timeout_seconds       = 3
-          }
-
-          security_context {
-            run_as_non_root = true
-          }
-
-          resources {
-            requests = {
-              cpu    = var.proxy_request_cpu
-              memory = var.proxy_request_memory
-            }
-            limits = {
-              cpu    = var.proxy_limit_cpu
-              memory = var.proxy_limit_memory
-            }
-          }
-        }
-
-        volume {
-          name = "superset-config"
-          config_map {
-            name = kubernetes_config_map.superset_config.metadata[0].name
-          }
-        }
-      }
-    }
-  }
-
-  timeouts {
-    create = "5m"
-    update = "5m"
-    delete = "3m"
-  }
-
-  depends_on = [
-    kubernetes_secret.superset_db_credentials,
-    kubernetes_config_map.superset_config
-  ]
-}
-
-
-# Kubernetes service to expose Superset
-resource "kubernetes_service" "superset_service" {
-  metadata {
-    name      = "superset-service"
-    namespace = kubernetes_namespace.superset_namespace.metadata[0].name
-  }
-
-  spec {
-    selector = {
-      app = "superset"
-    }
-
-    port {
-      name        = "http"
-      port        = 80
-      target_port = 8088
-      protocol    = "TCP"
-    }
-
-    type = "LoadBalancer"  # Or "ClusterIP" if you use a ingress
-  }
-}
-*/
-/*
-# Optionnel : if you want to expose Superset to a domain name with static IP 
-resource "kubernetes_ingress_v1" "superset_ingress" {
-  count = var.enable_ingress ? 1 : 0
-
-  metadata {
-    name      = "superset-ingress"
-    namespace = kubernetes_namespace.superset_namespace.metadata[0].name
-    annotations = {
-      "kubernetes.io/ingress.class"                = "gce"
-      "kubernetes.io/ingress.global-static-ip-name" = var.static_ip_name  # if you have a static ip
-    }
-  }
-
-  spec {
-    rule {
-      host = var.superset_domain  # ex: superset.yourdomain.com
-      http {
-        path {
-          path      = "/*"
-          path_type = "ImplementationSpecific"
-          backend {
-            service {
-              name = kubernetes_service.superset_service.metadata[0].name
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-*/

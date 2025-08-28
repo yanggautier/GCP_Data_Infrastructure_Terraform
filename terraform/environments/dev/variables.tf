@@ -199,3 +199,35 @@ variable "cloud_composer_admin_email" {
   description = "Admin email for cloud composer dag run failure"
   type        = string
 }
+
+
+# ---------------------- Superset auth variables ------------------------------
+variable "superset_admin_username" {
+  description = "Username pour l'administrateur Superset"
+  type        = string
+  default     = "admin"
+}
+
+variable "superset_admin_password" {
+  description = "Mot de passe pour l'administrateur Superset"
+  type        = string
+  sensitive   = true
+}
+
+variable "superset_admin_firstname" {
+  description = "Prénom de l'administrateur Superset"
+  type        = string
+  default     = "Admin"
+}
+
+variable "superset_admin_lastname" {
+  description = "Nom de l'administrateur Superset"
+  type        = string
+  default     = "User"
+}
+
+variable "superset_admin_email" {
+  description = "Email de l'administrateur Superset"
+  type        = string
+}
+

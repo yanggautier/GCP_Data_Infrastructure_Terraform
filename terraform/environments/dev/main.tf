@@ -241,7 +241,7 @@ data "google_client_config" "default" {}
 
 # Use Google provider with registry auth
 provider "docker" {
-    registry_auth {
+  registry_auth {
     address  = "${var.region}-docker.pkg.dev"
     username = "oauth2accesstoken"
     password = data.google_client_config.default.access_token

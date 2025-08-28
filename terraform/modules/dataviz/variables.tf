@@ -55,6 +55,75 @@ variable "superset_limit_memory" {
   default     = "2Gi"
 }
 
+# Superset auth variables
+variable "superset_admin_username" {
+  description = "Username pour l'administrateur Superset"
+  type        = string
+  default     = "admin"
+}
+
+variable "superset_admin_password" {
+  description = "Mot de passe pour l'administrateur Superset"
+  type        = string
+  sensitive   = true
+}
+
+variable "superset_admin_firstname" {
+  description = "Prénom de l'administrateur Superset"
+  type        = string
+  default     = "Admin"
+}
+
+variable "superset_admin_lastname" {
+  description = "Nom de l'administrateur Superset"
+  type        = string
+  default     = "User"
+}
+
+variable "superset_admin_email" {
+  description = "Email de l'administrateur Superset"
+  type        = string
+}
+
+/*
+# PostgreSQL Variables
+variable "postgresql_database" {
+  description = "Nom de la base de données PostgreSQL"
+  type        = string
+  default     = "superset"
+}
+
+variable "postgresql_username" {
+  description = "Username PostgreSQL"
+  type        = string
+  default     = "superset"
+}
+
+variable "postgresql_password" {
+  description = "Mot de passe PostgreSQL"
+  type        = string
+  sensitive   = true
+}
+*/
+
+variable "superset_service_port" {
+  description = "Port du service Superset"
+  type        = number
+  default     = 8088
+}
+
+# Variables générales
+variable "superset_namespace" {
+  description = "Namespace Kubernetes pour Superset"
+  type        = string
+  default     = "superset"
+}
+
+variable "superset_chart_version" {
+  description = "Version du chart Helm Superset"
+  type        = string
+  default     = "0.15.0"
+}
 # ---------------------------------- Proxy configuration variables ------------------------------
 variable "proxy_request_cpu" {
   description = "Cloud sql proxy container request cpu in Kubernetes"
