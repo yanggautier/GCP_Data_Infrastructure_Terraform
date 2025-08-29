@@ -106,8 +106,8 @@ resource "kubernetes_config_map" "superset_config" {
     })
   }
 }
-*/
 
+/*
 resource "kubernetes_config_map" "superset_requirements" {
   metadata {
     name      = "superset-requirements"
@@ -118,7 +118,7 @@ resource "kubernetes_config_map" "superset_requirements" {
   data = {
     "requirements.txt" = file("${path.module}/../../superset/requirements.txt")
   }
-}
+}*/
 
 resource "helm_release" "superset" {
   name       = "superset"
