@@ -121,6 +121,10 @@ resource "kubernetes_config_map" "superset_requirements" {
   }
 }*/
 
+locals {
+  cloud_sql_instance_connection_name = "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
+}
+
 resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
@@ -139,6 +143,7 @@ resource "helm_release" "superset" {
       value = "latest"
     },*/
     # Superset Admin user
+     # Superset Admin user
     {
       name  = "init.adminUser.username"
       value = var.superset_admin_username
@@ -165,9 +170,10 @@ resource "helm_release" "superset" {
       value = "false"
     },
     # Configuration Cloud SQL PostgreSQL externe
+    # The host is now localhost because of the Cloud SQL Proxy sidecar
     {
       name  = "externalDatabase.host"
-      value = var.cloud_sql_private_ip
+      value = "127.0.0.1"
     },
     {
       name  = "externalDatabase.port"
@@ -207,10 +213,36 @@ resource "helm_release" "superset" {
       name  = "redis.enabled"
       value = "true"
     },
+    # Configure the Cloud SQL Proxy as a sidecar container
     {
-      name  = "service.port"
-      value = var.superset_service_port
+      name  = "extraContainers[0].name"
+      value = "cloudsql-proxy"
     },
+    {
+      name  = "extraContainers[0].image"
+      value = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.1.0"
+    },
+    {
+      name  = "extraContainers[0].command[0]"
+      value = "/cloud-sql-proxy"
+    },
+    {
+      name  = "extraContainers[0].args[0]"
+      value = "--port=5432"
+    },
+    {
+      name  = "extraContainers[0].args[1]"
+      value = "--address=127.0.0.1"
+    },
+    {
+      name  = "extraContainers[0].args[2]"
+      value = local.cloud_sql_instance_connection_name
+    },
+    {
+      name  = "extraContainers[0].securityContext.runAsUser"
+      value = "0"
+    },
+    # Superset's configuration
     {
       name  = "configOverrides.configs"
       value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
