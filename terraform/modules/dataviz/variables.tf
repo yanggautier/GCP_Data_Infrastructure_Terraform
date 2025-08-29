@@ -148,6 +148,11 @@ variable "cloud_sql_instance_name" {
   type        = string
 }
 
+variable "cloud_sql_private_ip" {
+  description = "Private IP of cloud SQL instance, will be used in Superset"
+  type        = string
+}
+
 variable "superset_database_user_name" {
   description = "Cloud SQL PostgreSQL database user name for Superset"
   type        = string

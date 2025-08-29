@@ -317,6 +317,7 @@ module "dataviz" {
   superset_admin_firstname         = var.superset_admin_firstname
   superset_admin_lastname          = var.superset_admin_lastname
   superset_admin_password          = var.superset_admin_password
+  cloud_sql_private_ip             = module.database.cloud_sql_private_ip
 
   depends_on = [
     google_project_service.apis,

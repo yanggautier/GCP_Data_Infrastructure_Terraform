@@ -7,7 +7,7 @@ RUN apt-get update \
      gcc \
      libpq-dev \
      python3-dev \
-  && pip install --no-cache-dir psycopg2==2.9.9 \
+  && pip install --no-cache-dir psycopg2==2.9.9 sqlalchemy-bigquery==1.15.0 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

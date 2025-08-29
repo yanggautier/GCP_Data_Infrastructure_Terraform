@@ -203,6 +203,9 @@ helm uninstall superset -n namespace_name
 # Get deployments
 kubectl get deployments -n namespace_name
 
+# Get clusters
+kubectl get nodes
+
 # Get pods
 kubectl get pods -n namespace_name
 
