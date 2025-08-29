@@ -46,12 +46,15 @@ extraEnv:
 extraContainers:
   - name: cloudsql-proxy
     image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.1.0
-    command: ["/cloud-sql-proxy"]
+    command: 
+      - "/cloud-sql-proxy"
     args:
       - "--port=5432"
-      - "--address=127.0.0.1"
+      - "--address=0.0.0.0"
       - "dbt-project-dvd-rent-464116:us-central1:sql-dev-instance"
-
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
 #service:
 #  type: LoadBalancer
 #   port: 8088
