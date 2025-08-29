@@ -43,7 +43,7 @@ resource "google_compute_global_address" "private_ip_alloc" {
   network       = google_compute_network.vpc.id
 }
 
-# Autorise Datastream à accéder à Cloud SQL
+# Authorise Datastream to acces Cloud SQL
 resource "google_compute_firewall" "allow_datastream_to_sql" {
   name    = "allow-datastream-to-sql"
   network = google_compute_network.vpc.name
@@ -60,6 +60,22 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
     "${google_compute_global_address.private_ip_alloc.address}/${google_compute_global_address.private_ip_alloc.prefix_length}",
   ]
   priority = 500
+}
+
+# Authorise GKE cluster to access Cloud SQL
+resource "google_compute_firewall" "allow_gke_to_sql" {
+  name    = "allow-gke-to-sql"
+  network = google_compute_network.vpc.name
+  project = var.project_id
+  allow {
+    protocol = "tcp"
+    ports    = ["5432"]
+  }
+  direction = "INGRESS"
+  source_ranges = [
+    var.gke_subnetwork_address, # GKE subnet
+  ]
+  priority = 501
 }
 
 # Authorise services to access vpc subnetworks

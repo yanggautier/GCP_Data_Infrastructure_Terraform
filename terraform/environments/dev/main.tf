@@ -239,6 +239,7 @@ resource "google_container_cluster" "kubernetes_cluster" {
 
 data "google_client_config" "default" {}
 
+/*
 # Use Google provider with registry auth
 provider "docker" {
   registry_auth {
@@ -247,6 +248,7 @@ provider "docker" {
     password = data.google_client_config.default.access_token
   }
 }
+*/
 
 # Use Kubernetes provider
 provider "kubernetes" {
@@ -322,6 +324,7 @@ module "dataviz" {
   depends_on = [
     google_project_service.apis,
     module.networking,
+    module.database,
     google_container_cluster.kubernetes_cluster
   ]
 }
