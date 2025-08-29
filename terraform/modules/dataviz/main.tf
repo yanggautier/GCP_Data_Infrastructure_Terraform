@@ -254,4 +254,6 @@ resource "helm_release" "superset" {
 
   wait    = true
   timeout = 600
+
+  depends_on = [ google_service_account_iam_binding.workload_identity_binding ]
 }
