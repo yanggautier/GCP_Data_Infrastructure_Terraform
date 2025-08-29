@@ -43,6 +43,15 @@ redis:
 extraEnv:
   SUPERSET_LOAD_EXAMPLES: "no"
 
+extraContainers:
+  - name: cloudsql-proxy
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.1.0
+    command: ["/cloud-sql-proxy"]
+    args:
+      - "--port=5432"
+      - "--address=127.0.0.1"
+      - "dbt-project-dvd-rent-464116:us-central1:sql-dev-instance"
+
 #service:
 #  type: LoadBalancer
 #   port: 8088

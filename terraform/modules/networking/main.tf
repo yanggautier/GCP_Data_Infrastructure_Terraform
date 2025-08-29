@@ -62,6 +62,23 @@ resource "google_compute_firewall" "allow_datastream_to_sql" {
   priority = 500
 }
 
+# Autorise tout le range interne (10.0.0.0/8) vers Cloud SQL (port 5432)
+resource "google_compute_firewall" "allow_all_internal_to_sql" {
+  name    = "allow-all-internal-to-sql"
+  network = google_compute_network.vpc.name
+  project = var.project_id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["5432"]
+  }
+
+  direction     = "INGRESS"
+  source_ranges = ["10.0.0.0/8"]
+
+  priority = 400
+}
+
 # Authorise GKE cluster to access Cloud SQL
 resource "google_compute_firewall" "allow_gke_to_sql" {
   name    = "allow-gke-to-sql"
