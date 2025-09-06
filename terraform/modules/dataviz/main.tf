@@ -143,7 +143,7 @@ resource "docker_registry_image" "superset_image" {
   name = docker_image.superset_custom_image.name
 }
 
-
+*/
 # ConfigMap for Superset configuration
 resource "kubernetes_config_map" "superset_config" {
   metadata {
@@ -164,7 +164,7 @@ resource "kubernetes_config_map" "superset_config" {
   }
 }
 
-/*
+
 resource "kubernetes_config_map" "superset_requirements" {
   metadata {
     name      = "superset-requirements"
@@ -175,7 +175,7 @@ resource "kubernetes_config_map" "superset_requirements" {
   data = {
     "requirements.txt" = file("${path.module}/../../superset/requirements.txt")
   }
-}*/
+}
 
 locals {
   cloud_sql_instance_connection_name = "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
