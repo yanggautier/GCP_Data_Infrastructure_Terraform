@@ -40,23 +40,19 @@ postgresql:
 redis:
   enabled: true
 
-extraEnv:
-  SUPERSET_LOAD_EXAMPLES: "no"
-
 extraContainers:
   - name: cloudsql-proxy
-    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.1.0
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
     command: 
       - "/cloud-sql-proxy"
     args:
       - "--port=5432"
       - "--address=0.0.0.0"
-      - "dbt-project-dvd-rent-464116:us-central1:sql-dev-instance"
+      - "$(CLOUD_SQL_INSTANCE_CONNECTION_NAME)"
     securityContext:
       runAsNonRoot: true
       runAsUser: 65532
-#service:
-#  type: LoadBalancer
-#   port: 8088
-#  targetPort: 8088
-#  annotations: {}
+
+extraEnv:
+  - CLOUD_SQL_INSTANCE_CONNECTION_NAME: "{{ .Values.externalDatabase.connectionName }}"
+  - SUPERSET_LOAD_EXAMPLES: "no"

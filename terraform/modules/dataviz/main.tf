@@ -16,6 +16,38 @@ resource "google_project_iam_member" "superset_cloudsql_client" {
   member  = "serviceAccount:${var.kubernetes_service_account_email}"
 }
 
+# Grant Superset the ability to connect to a Cloud SQL instance
+resource "google_project_iam_member" "superset_cloudsql_instanceUser" {
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "serviceAccount:${var.kubernetes_service_account_email}"
+}
+
+# Grant Superset the ability to create and manage databases in Cloud SQL
+resource "google_project_iam_member" "superset_cloudsql_editor" {
+  project = var.project_id
+  role    = "roles/cloudsql.editor"
+  member  = "serviceAccount:${var.kubernetes_service_account_email}"
+}
+
+# Create an IAM user for Superset to connect to Cloud SQL
+resource "google_sql_user" "superset_iam_user" {
+  name     = var.kubernetes_service_account_email
+  instance = var.cloud_sql_instance_name
+  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
+  
+  depends_on = [var.cloud_sql_instance_name]
+}
+
+# Grant IAM user permissions to  Superset  db
+resource "google_sql_user" "superset_iam_db_user" {
+  name     = trimsuffix(var.kubernetes_service_account_email, ".gserviceaccount.com")
+  instance = var.cloud_sql_instance_name
+  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
+  
+  depends_on = [var.cloud_sql_instance_name]
+}
+
 # Create a namespace for Superset
 resource "kubernetes_namespace" "superset_namespace" {
   metadata {
@@ -41,6 +73,32 @@ resource "kubernetes_service_account" "superset_k8s_sa" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+# Verify that the IAM permissions are correctly set
+resource "null_resource" "verify_cloudsql_permissions" {
+  triggers = {
+    service_account = var.kubernetes_service_account_email
+    instance_name   = var.cloud_sql_instance_name
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      echo "Verifying Cloud SQL permissions for ${var.kubernetes_service_account_email}"
+      
+      # Vérifier les permissions du service account
+      gcloud projects get-iam-policy ${var.project_id} \
+        --flatten="bindings[].members" \
+        --format="table(bindings.role)" \
+        --filter="bindings.members:${var.kubernetes_service_account_email}"
+    EOT
+  }
+
+  depends_on = [
+    google_project_iam_member.superset_cloudsql_client,
+    google_project_iam_member.superset_cloudsql_instanceUser,
+    google_service_account_iam_binding.workload_identity_binding
+  ]
 }
 
 # Bind the Superset service account to the Kubernetes service account
@@ -125,14 +183,14 @@ locals {
   cloud_sql_instance_connection_name = "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
 }
 
-resource "helm_release" "superset" {
+/* resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
   version    = var.superset_chart_version
 
-  set = [
+  set = [ */
     # Custom Docker image
     /*{
       name  = "image.repository"
@@ -143,8 +201,7 @@ resource "helm_release" "superset" {
       value = "latest"
     },*/
     # Superset Admin user
-     # Superset Admin user
-    {
+    /* {
       name  = "init.adminUser.username"
       value = var.superset_admin_username
     },
@@ -204,6 +261,7 @@ resource "helm_release" "superset" {
       name  = "service.targetPort"
       value = 8088
     },
+    # Disable NodePort
     {
       name  = "service.nodePort.http"
       value = "null"
@@ -255,5 +313,190 @@ resource "helm_release" "superset" {
   wait    = true
   timeout = 600
 
-  depends_on = [ google_service_account_iam_binding.workload_identity_binding ]
+  depends_on = [google_service_account_iam_binding.workload_identity_binding]
+} */
+
+# Configuration Helm mise à jour avec authentification IAM pour Cloud SQL Proxy
+
+resource "helm_release" "superset" {
+  name       = "superset"
+  repository = "https://apache.github.io/superset"
+  chart      = "superset"
+  namespace  = var.superset_namespace
+  version    = var.superset_chart_version
+
+  values = [
+    file("${path.module}/../../superset/superset-values.yaml"),
+    yamlencode({
+      # Service Account Configuration
+      serviceAccount = {
+        create = false
+        name   = kubernetes_service_account.superset_k8s_sa.metadata[0].name
+      }
+
+      # Admin User Configuration
+      init = {
+        adminUser = {
+          username  = var.superset_admin_username
+          password  = var.superset_admin_password
+          firstname = var.superset_admin_firstname
+          lastname  = var.superset_admin_lastname
+          email     = var.superset_admin_email
+        }
+      }
+
+      # External Database Configuration avec authentification IAM
+      externalDatabase = {
+        host     = "127.0.0.1"
+        port     = "5432"
+        database = var.superset_database_name
+        # Utilisation de l'authentification IAM ou mot de passe traditionnel
+        user     = var.use_iam_auth ? var.kubernetes_service_account_email : var.superset_database_user_name
+        password = var.use_iam_auth ? "" : var.superset_db_password
+      }
+
+      # Service Configuration
+      service = {
+        type       = "LoadBalancer"
+        port       = var.superset_service_port
+        targetPort = 8088
+      }
+
+      # Cloud SQL Proxy Sidecar avec configuration IAM
+      extraContainers = [
+        {
+          name  = "cloudsql-proxy"
+          image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0"
+          args = [
+            "--port=5432",
+            "--address=127.0.0.1",
+            # Utiliser l'authentification IAM si configurée
+            var.use_iam_auth ? "--auto-iam-authn" : "",
+            # Activer le logging pour debug
+            "--structured-logs",
+            "--verbose",
+            local.cloud_sql_instance_connection_name
+          ]
+          securityContext = {
+            runAsNonRoot = true
+            runAsUser    = 65532
+            allowPrivilegeEscalation = false
+            capabilities = {
+              drop = ["ALL"]
+            }
+          }
+          resources = {
+            requests = {
+              memory = "256Mi"
+              cpu    = "100m"
+            }
+            limits = {
+              memory = "512Mi"
+              cpu    = "200m"
+            }
+          }
+          # Variables d'environnement pour le proxy
+          env = [
+            {
+              name  = "GOOGLE_APPLICATION_CREDENTIALS"
+              value = "/var/secrets/google/key.json"
+            },
+            {
+              name  = "CLOUDSQL_INSTANCE_CONNECTION_NAME"
+              value = local.cloud_sql_instance_connection_name
+            }
+          ]
+          # Health checks pour le proxy
+          readinessProbe = {
+            tcpSocket = {
+              port = 5432
+            }
+            initialDelaySeconds = 10
+            periodSeconds       = 5
+            timeoutSeconds      = 3
+            failureThreshold    = 3
+          }
+          livenessProbe = {
+            tcpSocket = {
+              port = 5432
+            }
+            initialDelaySeconds = 30
+            periodSeconds       = 10
+            timeoutSeconds      = 5
+            failureThreshold    = 3
+          }
+        }
+      ]
+
+      # Init container pour attendre que le proxy soit prêt
+      initContainers = [
+        {
+          name  = "wait-for-cloudsql-proxy"
+          image = "busybox:1.35"
+          command = [
+            "sh",
+            "-c",
+            <<-EOT
+              echo "Waiting for Cloud SQL Proxy to be ready..."
+              until nc -z 127.0.0.1 5432; do
+                echo "Cloud SQL Proxy is not ready yet..."
+                sleep 2
+              done
+              echo "Cloud SQL Proxy is ready!"
+            EOT
+          ]
+        }
+      ]
+
+      # Configuration Superset avec URI approprié
+      configOverrides = {
+        secret = random_string.superset_secret_key.result
+        # Configuration Redis cache
+        cache_config = {
+          CACHE_TYPE           = "RedisCache"
+          CACHE_DEFAULT_TIMEOUT = 300
+          CACHE_KEY_PREFIX     = "superset_"
+          CACHE_REDIS_HOST     = var.superset_redis_cache_host
+          CACHE_REDIS_PORT     = 6379
+          CACHE_REDIS_DB       = 1
+        }
+        # URI de base de données avec ou sans mot de passe selon l'auth
+        sqlalchemy_database_uri = var.use_iam_auth ? "postgresql://${var.kubernetes_service_account_email}@127.0.0.1:5432/${var.superset_database_name}" : "postgresql://${var.superset_database_user_name}:${var.superset_db_password}@127.0.0.1:5432/${var.superset_database_name}"
+      }
+
+      # Variables d'environnement pour Superset
+      extraEnv = {
+        SUPERSET_LOAD_EXAMPLES = "no"
+        CACHE_REDIS_HOST      = var.superset_redis_cache_host
+        CACHE_REDIS_PORT      = "6379"
+        CACHE_REDIS_DB        = "1"
+        # Variable pour indiquer l'utilisation de l'auth IAM
+        USE_IAM_AUTH          = var.use_iam_auth ? "true" : "false"
+      }
+
+      # Annotations pour la Workload Identity
+      podAnnotations = {
+        "iam.gke.io/gcp-service-account" = var.kubernetes_service_account_email
+      }
+    })
+  ]
+
+  wait          = true
+  wait_for_jobs = true  
+  timeout       = 1800
+
+  depends_on = [
+    google_project_iam_member.superset_cloudsql_client,
+    google_project_iam_member.superset_cloudsql_instanceUser,
+    google_service_account_iam_binding.workload_identity_binding,
+    kubernetes_service_account.superset_k8s_sa,
+    kubernetes_secret.superset_db_credentials
+  ]
+}
+
+# Variable pour contrôler le type d'authentification
+variable "use_iam_auth" {
+  description = "Use IAM authentication for Cloud SQL instead of password"
+  type        = bool
+  default     = false
 }

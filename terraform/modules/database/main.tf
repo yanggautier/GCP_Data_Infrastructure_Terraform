@@ -55,6 +55,7 @@ resource "google_sql_database_instance" "postgresql_instance" {
     ip_configuration {
       ipv4_enabled                                  = true
       private_network                               = var.vpc_id
+      #private_network                              = var.vpc_id
       enable_private_path_for_google_cloud_services = true
     }
 

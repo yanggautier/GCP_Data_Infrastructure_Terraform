@@ -117,6 +117,7 @@ module "database" {
   vpc_name                         = module.networking.vpc_name
   datastream_subset_name           = module.networking.datastream_subnet_name
   private_vpc_connection           = module.networking.private_vpc_connection
+  vpc_self_link                    = module.networking.vpc_self_link
 
   depends_on = [
     google_project_service.apis,
@@ -240,7 +241,7 @@ resource "google_container_cluster" "kubernetes_cluster" {
 data "google_client_config" "default" {}
 
 /*
-# Use Google provider with registry auth
+# Use Google provider with registry auth for upload custom docker image to artifcat repository
 provider "docker" {
   registry_auth {
     address  = "${var.region}-docker.pkg.dev"

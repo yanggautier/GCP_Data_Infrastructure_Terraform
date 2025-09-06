@@ -8,6 +8,11 @@ output "vpc_name" {
   value       = google_compute_network.vpc.name
 }
 
+output "vpc_self_link" {
+  description = "VPC self link"
+  value       = google_compute_network.vpc.self_link
+}
+
 # Réseau VPC pour Datastream
 output "datastream_subnet_id" {
   description = "ID of the Datastream subnetwork."

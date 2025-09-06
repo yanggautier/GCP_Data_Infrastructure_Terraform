@@ -30,6 +30,11 @@ variable "vpc_name" {
   type        = string
 }
 
+variable "vpc_self_link" {
+  description = "VPC self link"
+  type        = string
+}
+
 variable "datastream_subset_name" {
   description = "Datastream VPC subset name"
   type        = string
