@@ -23,6 +23,13 @@ resource "google_project_iam_member" "superset_cloudsql_instanceUser" {
   member  = "serviceAccount:${var.kubernetes_service_account_email}"
 }
 
+# Grant Superset the ability to access secrets in Secret Manager
+resource "google_project_iam_member" "superset_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${var.kubernetes_service_account_email}"
+}
+
 # Grant Superset the ability to create and manage databases in Cloud SQL
 resource "google_project_iam_member" "superset_cloudsql_editor" {
   project = var.project_id
@@ -32,7 +39,7 @@ resource "google_project_iam_member" "superset_cloudsql_editor" {
 
 # Create an IAM user for Superset to connect to Cloud SQL
 resource "google_sql_user" "superset_iam_user" {
-  name     = substr(split("@", var.kubernetes_service_account_email)[0], 0, 63)
+  name     = var.kubernetes_service_account_email
   instance = var.cloud_sql_instance_name
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
   
@@ -40,7 +47,7 @@ resource "google_sql_user" "superset_iam_user" {
 }
 
 # Grant IAM user permissions to  Superset  db
-resource "google_sql_user" "superset_iam_short" {
+resource "google_sql_user" "superset_iam_db_user" {
   name     = "superset-k8s-sa"
   instance = var.cloud_sql_instance_name
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
@@ -183,14 +190,14 @@ locals {
   cloud_sql_instance_connection_name = "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
 }
 
-/* resource "helm_release" "superset" {
+resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
   chart      = "superset"
   namespace  = var.superset_namespace
   version    = var.superset_chart_version
 
-  set = [ */
+  set = [
     # Custom Docker image
     /*{
       name  = "image.repository"
@@ -201,7 +208,7 @@ locals {
       value = "latest"
     },*/
     # Superset Admin user
-    /* {
+    {
       name  = "init.adminUser.username"
       value = var.superset_admin_username
     },
@@ -314,208 +321,4 @@ locals {
   timeout = 600
 
   depends_on = [google_service_account_iam_binding.workload_identity_binding]
-} */
-
-# Configuration Helm mise à jour avec authentification IAM pour Cloud SQL Proxy
-
-resource "helm_release" "superset" {
-  name       = "superset"
-  repository = "https://apache.github.io/superset"
-  chart      = "superset"
-  namespace  = var.superset_namespace
-  version    = var.superset_chart_version
-
-  values = [
-    file("${path.module}/../../superset/superset-values.yaml")
-  ]
-
-  # Configuration en utilisant set au lieu de values complexes
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = kubernetes_service_account.superset_k8s_sa.metadata[0].name
-  }
-
-  # Admin User
-  set {
-    name  = "init.adminUser.username"
-    value = var.superset_admin_username
-  }
-
-  set {
-    name  = "init.adminUser.password"
-    value = var.superset_admin_password
-  }
-
-  set {
-    name  = "init.adminUser.firstname"
-    value = var.superset_admin_firstname
-  }
-
-  set {
-    name  = "init.adminUser.lastname"
-    value = var.superset_admin_lastname
-  }
-
-  set {
-    name  = "init.adminUser.email"
-    value = var.superset_admin_email
-  }
-
-  # Database externe (via Cloud SQL Proxy)
-  set {
-    name  = "postgresql.enabled"
-    value = "false"
-  }
-
-  set {
-    name  = "externalDatabase.host"
-    value = "127.0.0.1"
-  }
-
-  set {
-    name  = "externalDatabase.port"
-    value = "5432"
-  }
-
-  set {
-    name  = "externalDatabase.database"
-    value = var.superset_database_name
-  }
-
-  set {
-    name  = "externalDatabase.user"
-    value = var.superset_database_user_name
-  }
-
-  set {
-    name  = "externalDatabase.password"
-    value = var.superset_db_password
-  }
-
-  # Redis externe (Memorystore)
-  set {
-    name  = "redis.enabled"
-    value = "false"
-  }
-
-  # Service LoadBalancer
-  set {
-    name  = "service.type"
-    value = "LoadBalancer"
-  }
-
-  set {
-    name  = "service.port"
-    value = var.superset_service_port
-  }
-
-  # Cloud SQL Proxy comme sidecar
-  set {
-    name  = "extraContainers[0].name"
-    value = "cloudsql-proxy"
-  }
-
-  set {
-    name  = "extraContainers[0].image"
-    value = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0"
-  }
-
-  set {
-    name  = "extraContainers[0].args[0]"
-    value = "--port=5432"
-  }
-
-  set {
-    name  = "extraContainers[0].args[1]"
-    value = "--address=127.0.0.1"
-  }
-
-  set {
-    name  = "extraContainers[0].args[2]"
-    value = local.cloud_sql_instance_connection_name
-  }
-
-  set {
-    name  = "extraContainers[0].securityContext.runAsNonRoot"
-    value = "true"
-  }
-
-  set {
-    name  = "extraContainers[0].securityContext.runAsUser"
-    value = "65532"
-  }
-
-  # Resources pour le proxy
-  set {
-    name  = "extraContainers[0].resources.requests.memory"
-    value = "256Mi"
-  }
-
-  set {
-    name  = "extraContainers[0].resources.requests.cpu"
-    value = "100m"
-  }
-
-  set {
-    name  = "extraContainers[0].resources.limits.memory"
-    value = "512Mi"
-  }
-
-  set {
-    name  = "extraContainers[0].resources.limits.cpu"
-    value = "200m"
-  }
-
-  # Configuration Superset
-  set {
-    name  = "configOverrides.secret"
-    value = random_string.superset_secret_key.result
-  }
-
-  # Configuration Redis comme chaîne
-  set_string {
-    name = "configOverrides.configs"
-    value = <<EOF
-CACHE_CONFIG = {
-    'CACHE_TYPE': 'RedisCache',
-    'CACHE_DEFAULT_TIMEOUT': 300,
-    'CACHE_KEY_PREFIX': 'superset_',
-    'CACHE_REDIS_HOST': '${var.superset_redis_cache_host}',
-    'CACHE_REDIS_PORT': 6379,
-    'CACHE_REDIS_DB': 1,
-}
-
-SQLALCHEMY_DATABASE_URI = 'postgresql://${var.superset_database_user_name}:${var.superset_db_password}@127.0.0.1:5432/${var.superset_database_name}'
-
-SUPERSET_LOAD_EXAMPLES = False
-WTF_CSRF_ENABLED = True
-EOF
-  }
-
-  # Timeouts et health checks
-  set {
-    name  = "readinessProbe.initialDelaySeconds"
-    value = "90"
-  }
-
-  set {
-    name  = "livenessProbe.initialDelaySeconds" 
-    value = "120"
-  }
-
-  wait          = true
-  wait_for_jobs = true
-  timeout       = 1800
-
-  depends_on = [
-    google_project_iam_member.superset_cloudsql_client,
-    google_service_account_iam_binding.workload_identity_binding,
-    kubernetes_service_account.superset_k8s_sa,
-    kubernetes_secret.superset_db_credentials
-  ]
 }
