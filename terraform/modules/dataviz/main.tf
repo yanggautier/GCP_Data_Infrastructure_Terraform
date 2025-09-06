@@ -285,7 +285,7 @@ resource "helm_release" "superset" {
     },
     {
       name  = "extraContainers[0].image"
-      value = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.1.0"
+      value = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0"
     },
     {
       name  = "extraContainers[0].command[0]"
