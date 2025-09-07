@@ -242,7 +242,7 @@ resource "google_container_node_pool" "superset_node_pool" {
   name       = "superset-node-pool"
   project    = var.project_id
   location   = var.region
-  cluster    = google_container_cluster.superset_cluster.name
+  cluster    = google_container_cluster.kubernetes_cluster.name
   node_count = 3 # Increased node count to provide more resources.
 
   node_config {
