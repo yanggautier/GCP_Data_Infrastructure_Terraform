@@ -2,8 +2,9 @@
 init:
   enabled: false
 
-# We need to define our own init containers for the main Superset pod.
+# Define our custom init containers for the main Superset pod.
 superset:
+  # The chart needs `initContainers` defined here to be applied.
   initContainers:
     - name: wait-for-cloudsql-and-db
       image: alpine/curl:3.14
@@ -27,11 +28,18 @@ superset:
       env:
         - name: CLOUD_SQL_INSTANCE_CONNECTION_NAME
           value: "{{ .Values.connectionName }}"
+      volumeMounts:
+        - name: google-cloud-sdk-volume
+          mountPath: /google-cloud-sdk
+          readOnly: true
+        - name: cloud-sql-proxy-volume
+          mountPath: /cloud-sql-proxy
+          readOnly: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
 
-# We also need to define a custom init container for the worker pod.
+# Define our custom init container for the worker pod.
 supersetWorker:
   initContainers:
     - name: wait-for-cloudsql-and-db-and-redis
@@ -60,6 +68,13 @@ supersetWorker:
       env:
         - name: CLOUD_SQL_INSTANCE_CONNECTION_NAME
           value: "{{ .Values.connectionName }}"
+      volumeMounts:
+        - name: google-cloud-sdk-volume
+          mountPath: /google-cloud-sdk
+          readOnly: true
+        - name: cloud-sql-proxy-volume
+          mountPath: /cloud-sql-proxy
+          readOnly: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
