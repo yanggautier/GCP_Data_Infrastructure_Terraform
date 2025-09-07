@@ -181,29 +181,6 @@ locals {
   cloud_sql_instance_connection_name = "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
 }
 
-resource "google_container_node_pool" "superset_node_pool" {
-  name       = "superset-node-pool"
-  project    = var.project_id
-  location   = var.region
-  cluster    = google_container_cluster.superset_cluster.name
-  node_count = 3 # Increased node count to provide more resources.
-
-  node_config {
-    machine_type = "e2-highmem-4" # Using a machine type with more memory and CPU.
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/sqlservice.admin"
-    ]
-    labels = {
-      role = "superset-nodes"
-    }
-    workload_metadata_config {
-      mode = "GKE_METADATA"
-    }
-    service_account = var.kubernetes_service_account_email
-  }
-}
-
 resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
