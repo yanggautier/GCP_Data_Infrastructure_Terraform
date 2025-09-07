@@ -173,7 +173,7 @@ Reformat all files in the project
 terraform fmt -recursive
 ```
 
-## Commands for Kubernetes to delete dbt namespace when it can not be deleted
+## Kubectl commands
 ```bash
 #Connect to cluster
 gcloud container clusters get-credentials dbt-cluster-<environment> --region <region> --project <project-id>
@@ -212,4 +212,6 @@ kubectl get pods -n namespace_name
 # Logs at a container
 kubect logs pod_id -n namespace_name -c container_name
 
+# Get events
+kubectl get events -n namespace_name --sort-by='.lastTimestamp'
 ```
