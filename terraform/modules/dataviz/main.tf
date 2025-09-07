@@ -42,7 +42,7 @@ resource "google_sql_user" "iam_service_account_user" {
   # Note: for Postgres only, GCP requires omitting the ".gserviceaccount.com" suffix
   # from the service account email due to length limits on database usernames.
   name     = trimsuffix(var.kubernetes_service_account_email, ".gserviceaccount.com")
-  instance = google_sql_database_instance.main.name
+  instance = var.cloud_sql_instance_name
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
 }
 
