@@ -37,13 +37,13 @@ resource "google_project_iam_member" "superset_cloudsql_editor" {
   member  = "serviceAccount:${var.kubernetes_service_account_email}"
 }
 
-# Grant IAM user permissions to  Superset  db
-resource "google_sql_user" "superset_iam_db_user" {
-  name     = "superset-k8s-sa"
-  instance = var.cloud_sql_instance_name
+
+resource "google_sql_user" "iam_service_account_user" {
+  # Note: for Postgres only, GCP requires omitting the ".gserviceaccount.com" suffix
+  # from the service account email due to length limits on database usernames.
+  name     = trimsuffix(var.kubernetes_service_account_email, ".gserviceaccount.com")
+  instance = google_sql_database_instance.main.name
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
-  
-  depends_on = [var.cloud_sql_instance_name]
 }
 
 # Create a namespace for Superset
@@ -179,6 +179,29 @@ resource "kubernetes_config_map" "superset_requirements" {
 
 locals {
   cloud_sql_instance_connection_name = "${var.project_id}:${var.region}:${var.cloud_sql_instance_name}"
+}
+
+resource "google_container_node_pool" "superset_node_pool" {
+  name       = "superset-node-pool"
+  project    = var.project_id
+  location   = var.region
+  cluster    = google_container_cluster.superset_cluster.name
+  node_count = 3 # Increased node count to provide more resources.
+
+  node_config {
+    machine_type = "e2-highmem-4" # Using a machine type with more memory and CPU.
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/sqlservice.admin"
+    ]
+    labels = {
+      role = "superset-nodes"
+    }
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+    service_account = var.kubernetes_service_account_email
+  }
 }
 
 resource "helm_release" "superset" {
