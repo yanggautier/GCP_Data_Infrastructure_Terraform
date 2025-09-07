@@ -1,5 +1,4 @@
 # Disable the chart's default initContainers.
-# This ensures that our custom ones will be used instead.
 init:
   enabled: false
 

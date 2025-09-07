@@ -264,6 +264,14 @@ resource "helm_release" "superset" {
       name  = "service.nodePort.http"
       value = "null"
     },
+    {
+      name  = "resources.requests.cpu"
+      value = "1"
+    },
+    {
+      name  = "resources.requests.memory"
+      value = "2Gi"
+    },
     # Configuration Redis
     {
       name  = "redis.enabled"
