@@ -1,17 +1,11 @@
-extraVolumes:
-  - name: requirements
-    configMap:
-      name: superset-requirements
-
-extraVolumeMounts:
-  - name: requirements
-    mountPath: /app/requirements
-    readOnly: true
-
+# Disable the chart's default initContainers.
+# This ensures that our custom ones will be used instead.
 init:
-  # This section overrides the default initContainers from the chart.
+  enabled: false
+
+# We need to define our own init containers for the main Superset pod.
+superset:
   initContainers:
-    # A custom init container to run the Cloud SQL proxy and wait for the database connection.
     - name: wait-for-cloudsql-and-db
       image: alpine/curl:3.14
       command:
@@ -38,6 +32,51 @@ init:
         runAsNonRoot: true
         runAsUser: 65532
 
+# We also need to define a custom init container for the worker pod.
+supersetWorker:
+  initContainers:
+    - name: wait-for-cloudsql-and-db-and-redis
+      image: alpine/curl:3.14
+      command:
+        - sh
+        - -c
+        - |
+          # The Cloud SQL Proxy must run as a long-running process
+          /cloud-sql-proxy --port=5432 "$(CLOUD_SQL_INSTANCE_CONNECTION_NAME)" &
+
+          echo "Waiting for Cloud SQL Proxy to be up on localhost:5432..."
+          while ! nc -z -w 1 localhost 5432; do
+            sleep 1
+          done
+          echo "Cloud SQL Proxy is up. Now waiting for PostgreSQL database..."
+          while ! nc -z -w 1 127.0.0.1 5432; do
+            sleep 1
+          done
+
+          echo "Database is ready. Waiting for Redis..."
+          while ! nc -z -w 1 superset-redis-master 6379; do
+            sleep 1
+          done
+          echo "Redis is ready. Exiting init container."
+      env:
+        - name: CLOUD_SQL_INSTANCE_CONNECTION_NAME
+          value: "{{ .Values.connectionName }}"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+
+
+# The rest of your configuration remains the same
+extraVolumes:
+  - name: requirements
+    configMap:
+      name: superset-requirements
+
+extraVolumeMounts:
+  - name: requirements
+    mountPath: /app/requirements
+    readOnly: true
+
 bootstrapScript: |
   #!/bin/bash
   
@@ -59,19 +98,9 @@ bootstrapScript: |
     echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap
   fi
 
-# Configuration PostgreSQL
-postgresql:
-  enabled: false
-  auth:
-    database: superset
-    username: superset
-
-# Configuration Redis
-redis:
-  enabled: true
-
+# We don't need an extra container anymore, as the init container handles this.
 extraContainers: []
 
 extraEnv:
-  - CLOUD_SQL_INSTANCE_CONNECTION_NAME: "{{ .Values.connectionName }}"
-  - SUPERSET_LOAD_EXAMPLES: "no"
+  - name: SUPERSET_LOAD_EXAMPLES
+    value: "no"
