@@ -269,37 +269,12 @@ resource "helm_release" "superset" {
       name  = "redis.enabled"
       value = "true"
     },
-    # Configure the Cloud SQL Proxy as a sidecar container
     {
-      name  = "extraContainers[0].name"
-      value = "cloudsql-proxy"
-    },
-    {
-      name  = "extraContainers[0].image"
-      value = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0"
-    },
-    {
-      name  = "extraContainers[0].command[0]"
-      value = "/cloud-sql-proxy"
-    },
-    {
-      name  = "extraContainers[0].args[0]"
-      value = "--port=5432"
-    },
-    {
-      name  = "extraContainers[0].args[1]"
-      value = "--address=127.0.0.1"
-    },
-    {
-      name  = "extraContainers[0].args[2]"
+      name  = "connectionName"
       value = local.cloud_sql_instance_connection_name
     },
     {
-      name  = "extraContainers[0].securityContext.runAsNonRoot"
-      value = "true"
-    },
-    {
-      name  = "extraContainers[0].securityContext.runAsUser"
+      name  = "runAsUser"
       value = "0"
     },
     # Superset's configuration
@@ -315,5 +290,7 @@ resource "helm_release" "superset" {
   wait    = true
   timeout = 600
 
-  depends_on = [google_service_account_iam_binding.workload_identity_binding]
+  depends_on = [
+    google_project_iam_member.superset_cloudsql_client,
+    google_service_account_iam_binding.workload_identity_binding]
 }

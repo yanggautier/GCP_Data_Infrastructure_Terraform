@@ -54,5 +54,5 @@ extraContainers:
       runAsUser: 65532
 
 extraEnv:
-  - CLOUD_SQL_INSTANCE_CONNECTION_NAME: "{{ .Values.externalDatabase.connectionName }}"
+  - CLOUD_SQL_INSTANCE_CONNECTION_NAME: "{{ .Values.connectionName }}"
   - SUPERSET_LOAD_EXAMPLES: "no"
