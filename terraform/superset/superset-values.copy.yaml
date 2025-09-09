@@ -1,0 +1,40 @@
+# Define the volumes that will be mounted into the pods.
+# This is where `google-cloud-sdk-volume` and `cloud-sql-proxy-volume` should be defined.
+extraVolumes:
+  - name: requirements
+    configMap:
+      name: superset-requirements
+
+extraVolumeMounts:
+  - name: requirements
+    mountPath: /app/requirements
+    readOnly: true
+
+bootstrapScript: |
+  #!/bin/bash
+  
+  # Install system-level dependencies
+  apt-get update && apt-get install -y \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    pkg-config
+
+  # Install required Python packages
+  uv pip install \
+    authlib \
+    psycopg2-binary \
+    google-cloud-bigquery \
+    google-cloud-sql-proxy # Assurez-vous que le proxy est installé ou accessible
+
+  # Create bootstrap file if it doesn't exist
+  if [ ! -f ~/bootstrap ]; then
+    echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap
+  fi
+
+# We don't need an extra container anymore, as the init container handles this.
+extraContainers: []
+
+extraEnv:
+  - name: SUPERSET_LOAD_EXAMPLES
+    value: "no"

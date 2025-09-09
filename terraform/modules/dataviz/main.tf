@@ -237,6 +237,11 @@ resource "helm_release" "superset" {
       name  = "service.type"
       value = "LoadBalancer"
     },
+    # Superset's configuration
+    {
+      name  = "configOverrides.configs"
+      value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
+    }
     /*
     # Configuration Cloud SQL PostgreSQL externe
     # The host is now localhost because of the Cloud SQL Proxy sidecar
@@ -286,16 +291,11 @@ resource "helm_release" "superset" {
       name  = "runAsUser"
       value = "0"
     },
-    # Superset's configuration
-    {
-      name  = "configOverrides.configs"
-      value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
-    }*/
+    */
   ]
-  /*
   values = [
     file("${path.module}/../../superset/superset-values.yaml")
-  ]*/
+  ]
 
   wait    = true
   timeout = 600
