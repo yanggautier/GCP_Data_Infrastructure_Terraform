@@ -237,6 +237,16 @@ resource "helm_release" "superset" {
       name  = "service.type"
       value = "LoadBalancer"
     },
+    {
+      name  = "service.port"
+      value = var.superset_service_port
+    },
+
+    # Disable NodePort
+    {
+      name  = "service.nodePort.http"
+      value = "null"
+    },
     # Superset's configuration
     {
       name  = "configOverrides.configs"
@@ -264,16 +274,6 @@ resource "helm_release" "superset" {
     {
       name  = "externalDatabase.password"
       value = var.superset_db_password
-    },
-    {
-      name  = "service.port"
-      value = var.superset_service_port
-    },
-
-    # Disable NodePort
-    {
-      name  = "service.nodePort.http"
-      value = "null"
     },
     {
       name  = "resources.requests.cpu"
