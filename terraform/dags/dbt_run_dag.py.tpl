@@ -28,7 +28,7 @@ with DAG(
     description="DBT pipeline running on GKE",
     schedule="* 2 * * *", 
     start_date=pendulum.datetime(2025, 8, 1, tz="UTC"),
-    email_on_failure={FAILURE_EMAIL}
+    email_on_failure= "{{ cloud_composer_admin_email }}"
     catchup=False,
     tags=["dbt", "kubernetes", "bigquery"]
 ) as dag: 
