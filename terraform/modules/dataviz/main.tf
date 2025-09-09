@@ -168,7 +168,7 @@ resource "kubernetes_config_map" "superset_config" {
 resource "kubernetes_config_map" "superset_requirements" {
   metadata {
     name      = "superset-requirements"
-    namespace = var.superset_namespace
+    namespace = kubernetes_namespace.superset_namespace.metadata[0].name
   }
 
 
@@ -185,7 +185,7 @@ resource "helm_release" "superset" {
   name       = "superset"
   repository = "https://apache.github.io/superset"
   chart      = "superset"
-  namespace  = var.superset_namespace
+  namespace  = kubernetes_namespace.superset_namespace.metadata[0].name
   version    = var.superset_chart_version
 
   set = [
@@ -300,5 +300,10 @@ resource "helm_release" "superset" {
 
   depends_on = [
     google_project_iam_member.superset_cloudsql_client,
+    kubernetes_namespace.superset_namespace,
+    kubernetes_secret.superset_db_credentials,
+    kubernetes_config_map.superset_config,
+    kubernetes_config_map.superset_requirements,
+    kubernetes_service_account.superset_k8s_sa,
     google_service_account_iam_binding.workload_identity_binding]
 }

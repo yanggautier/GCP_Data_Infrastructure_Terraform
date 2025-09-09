@@ -28,12 +28,13 @@ superset:
       env:
         - name: CLOUD_SQL_INSTANCE_CONNECTION_NAME
           value: "{{ .Values.connectionName }}"
+      # Les volumes requis pour le Cloud SQL Proxy doivent être montés ici
       volumeMounts:
-        - name: google-cloud-sdk-volume
-          mountPath: /google-cloud-sdk
-          readOnly: true
         - name: cloud-sql-proxy-volume
           mountPath: /cloud-sql-proxy
+          readOnly: true
+        - name: google-cloud-sdk-volume
+          mountPath: /google-cloud-sdk
           readOnly: true
       securityContext:
         runAsNonRoot: true
@@ -68,23 +69,29 @@ supersetWorker:
       env:
         - name: CLOUD_SQL_INSTANCE_CONNECTION_NAME
           value: "{{ .Values.connectionName }}"
+      # Les volumes requis pour le Cloud SQL Proxy doivent être montés ici
       volumeMounts:
-        - name: google-cloud-sdk-volume
-          mountPath: /google-cloud-sdk
-          readOnly: true
         - name: cloud-sql-proxy-volume
           mountPath: /cloud-sql-proxy
+          readOnly: true
+        - name: google-cloud-sdk-volume 
+          mountPath: /google-cloud-sdk
           readOnly: true
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
 
 
-# The rest of your configuration remains the same
+# Define the volumes that will be mounted into the pods.
+# This is where `google-cloud-sdk-volume` and `cloud-sql-proxy-volume` should be defined.
 extraVolumes:
   - name: requirements
     configMap:
       name: superset-requirements
+  - name: google-cloud-sdk-volume 
+    emptyDir: {} 
+  - name: cloud-sql-proxy-volume 
+    emptyDir: {}
 
 extraVolumeMounts:
   - name: requirements
@@ -106,6 +113,7 @@ bootstrapScript: |
     authlib \
     psycopg2-binary \
     google-cloud-bigquery \
+    google-cloud-sql-proxy # Assurez-vous que le proxy est installé ou accessible
 
   # Create bootstrap file if it doesn't exist
   if [ ! -f ~/bootstrap ]; then
