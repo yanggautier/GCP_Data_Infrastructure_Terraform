@@ -222,8 +222,22 @@ resource "helm_release" "superset" {
     # PostgreSQL Configuration
     {
       name  = "postgresql.enabled"
-      value = "false"
+      value = "true"
     },
+    {
+      name  = "redis.enabled"
+      value = "true"
+    },
+    {
+      name  = "service.targetPort"
+      value = 8088
+    },
+    # Load Balancer configuration
+    {
+      name  = "service.type"
+      value = "LoadBalancer"
+    },
+    /*
     # Configuration Cloud SQL PostgreSQL externe
     # The host is now localhost because of the Cloud SQL Proxy sidecar
     {
@@ -246,19 +260,11 @@ resource "helm_release" "superset" {
       name  = "externalDatabase.password"
       value = var.superset_db_password
     },
-    # Load Balancer configuration
-    {
-      name  = "service.type"
-      value = "LoadBalancer"
-    },
     {
       name  = "service.port"
       value = var.superset_service_port
     },
-    {
-      name  = "service.targetPort"
-      value = 8088
-    },
+
     # Disable NodePort
     {
       name  = "service.nodePort.http"
@@ -272,11 +278,6 @@ resource "helm_release" "superset" {
       name  = "resources.requests.memory"
       value = "2Gi"
     },
-    # Configuration Redis
-    {
-      name  = "redis.enabled"
-      value = "true"
-    },
     {
       name  = "connectionName"
       value = local.cloud_sql_instance_connection_name
@@ -289,11 +290,12 @@ resource "helm_release" "superset" {
     {
       name  = "configOverrides.configs"
       value = "SECRET_KEY = '${random_string.superset_secret_key.result}'"
-    }
+    }*/
   ]
+  /*
   values = [
     file("${path.module}/../../superset/superset-values.yaml")
-  ]
+  ]*/
 
   wait    = true
   timeout = 600
