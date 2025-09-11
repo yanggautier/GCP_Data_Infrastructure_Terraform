@@ -55,7 +55,7 @@ with DAG(
         name="dbt-compile-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="${determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }"
+        image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
 
@@ -114,7 +114,7 @@ with DAG(
         name="dbt-run-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="${determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task')}",
+        image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
 
@@ -169,7 +169,7 @@ with DAG(
         name="dbt-test-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="${determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task')}",
+        image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
 
