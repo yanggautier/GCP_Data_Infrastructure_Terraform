@@ -224,7 +224,7 @@ resource "google_storage_bucket_object" "dbt_run_dag_file" {
     dbt_namespace              = var.dbt_namespace
     dbt_k8s_sa_name            = kubernetes_service_account.dbt_k8s_sa.metadata[0].name
     dbt_default_image          = "ghcr.io/dbt-labs/dbt-bigquery:latest"
-    dbt_custom_image           = "{{ var.region }}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.dbt_repo.name}/dbt:latest"
+    dbt_custom_image           = "${var.region }-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.dbt_repo.name}/dbt:latest"
     cloud_composer_admin_email = var.cloud_composer_admin_email
     bronze_dataset             = var.bigquery_bronze_dataset_id
     silver_dataset             = var.bigquery_silver_dataset_id
