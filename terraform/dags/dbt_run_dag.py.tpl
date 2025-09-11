@@ -5,11 +5,6 @@ from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import Kubernete
 from airflow.operators.bash import BashOperator
 from airflow import DAG
 
-# Variables injected by Terraform
-DBT_K8S_SERVICE_ACCOUNT_NAME = "${dbt_k8s_sa_name}"
-DBT_NAMESPACE = "${dbt_namespace}"
-FAILURE_EMAIL = "${cloud_composer_admin_email}"
-
 
 # Default Configuration
 default_args = {
@@ -51,8 +46,8 @@ with DAG(
     compile_dbt_models = KubernetesPodOperator(
         task_id="compile_dbt_models",
         name="dbt-compile-pod",
-        namespace=DBT_NAMESPACE,
-        service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
+        namespace="${dbt_namespace}",
+        service_account_name="${dbt_k8s_sa_name}",
         image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
@@ -110,8 +105,8 @@ with DAG(
     run_dbt_models = KubernetesPodOperator(
         task_id="run_dbt_models",
         name="dbt-run-pod",
-        namespace=DBT_NAMESPACE,
-        service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
+        namespace="${dbt_namespace}",
+        service_account_name="${dbt_k8s_sa_name}",
         image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
@@ -165,8 +160,8 @@ with DAG(
     test_dbt_models = KubernetesPodOperator(
         task_id="test_dbt_models",
         name="dbt-test-pod",
-        namespace=DBT_NAMESPACE,
-        service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
+        namespace="${dbt_namespace}",
+        service_account_name="${dbt_k8s_sa_name}",
         image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
