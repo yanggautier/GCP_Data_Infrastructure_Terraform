@@ -8,8 +8,6 @@ from airflow import DAG
 # Variables injected by Terraform
 DBT_K8S_SERVICE_ACCOUNT_NAME = "${dbt_k8s_sa_name}"
 DBT_NAMESPACE = "${dbt_namespace}"
-DBT_DEFAULT_IMAGE = "${dbt_default_image}"
-DBT_CUSTOM_IMAGE = "${dbt_custom_image}"
 FAILURE_EMAIL = "${cloud_composer_admin_email}"
 
 
@@ -38,10 +36,10 @@ with DAG(
     determine_dbt_image_task = BashOperator(
         task_id="determine_dbt_image",
         bash_command=f"""
-            if gcloud artifacts docker images describe ${DBT_CUSTOM_IMAGE} >/dev/null 2>&1; then
-                echo "${DBT_CUSTOM_IMAGE}"
+            if gcloud artifacts docker images describe ${dbt_custom_image} >/dev/null 2>&1; then
+                echo "${dbt_custom_image}"
             else
-                echo "${DBT_DEFAULT_IMAGE}"
+                echo "${dbt_default_image}"
             fi
         """,
         do_xcom_push=True,
