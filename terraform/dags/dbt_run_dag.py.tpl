@@ -12,6 +12,7 @@ DBT_DEFAULT_IMAGE = "${dbt_default_image}"
 DBT_CUSTOM_IMAGE = "${dbt_custom_image}"
 FAILURE_EMAIL = "${cloud_composer_admin_email}"
 
+
 # Default Configuration
 default_args = {
     'owner': 'data-team',
@@ -56,8 +57,8 @@ with DAG(
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
         image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}"
         cmds=["dbt"],
-        arguments=["compile", "--profiles-dir", "/app/profiles"],
-        
+        arguments=["run",  "--vars", "{'bronze_dataset': '${bigquery_bronze_dataset_id}', 'silver_dataset': '${bigquery_silver_dataset_id}', 'gold_dataset': '${bigquery_gold_dataset_id}'}", "--profiles-dir", "/app/profiles"],
+
         # Configuration of volume_mounts
         volume_mounts=[
             {
@@ -115,8 +116,8 @@ with DAG(
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
         image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}",
         cmds=["dbt"],
-        arguments=["run", "--profiles-dir", "/app/profiles"],
-        
+        arguments=["run",  "--vars", "{'bronze_dataset': '${bigquery_bronze_dataset_id}', 'silver_dataset': '${bigquery_silver_dataset_id}', 'gold_dataset': '${bigquery_gold_dataset_id}'}", "--profiles-dir", "/app/profiles"],
+
         volume_mounts=[
             {
                 "name": "dbt-profiles",
@@ -168,9 +169,9 @@ with DAG(
         name="dbt-test-pod",
         namespace=DBT_NAMESPACE,
         service_account_name=DBT_K8S_SERVICE_ACCOUNT_NAME,
-        image="ghcr.io/dbt-labs/dbt-bigquery:latest",
+        image="{{ determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task') }}",
         cmds=["dbt"],
-        arguments=["test", "--profiles-dir", "/app/profiles"],
+        arguments=["run",  "--vars", "{'bronze_dataset': '${bigquery_bronze_dataset_id}', 'silver_dataset': '${bigquery_silver_dataset_id}', 'gold_dataset': '${bigquery_gold_dataset_id}'}", "--profiles-dir", "/app/profiles"],
         
         volume_mounts=[
             {

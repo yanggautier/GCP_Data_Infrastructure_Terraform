@@ -288,6 +288,8 @@ module "orchestration" {
   gke_master_ipv4_cidr_block          = var.gke_master_ipv4_cidr_block
   cluster_deletion_protection         = var.cluster_deletion_protection
   bigquery_bronze_dataset_id          = module.bigquery.bigquery_bronze_dataset_id
+  bigquery_silver_dataset_id          = module.bigquery.bigquery_silver_dataset_id
+  bigquery_gold_dataset_id            = module.bigquery.bigquery_gold_dataset_id
   kubernetes_service_account_email    = google_service_account.kubernetes_sa.email
   kubernetes_service_account_id       = google_service_account.kubernetes_sa.name
   cloud_composer_admin_email          = var.cloud_composer_admin_email

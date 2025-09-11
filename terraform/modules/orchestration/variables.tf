@@ -130,6 +130,17 @@ variable "cloud_composer_admin_email" {
 
 # ---------------------------------- BigQuery variables ------------------------------
 variable "bigquery_bronze_dataset_id" {
-  description = "ID of the BigQuery dataset."
+  description = "ID of the BigQuery Bronze dataset."
+  type        = string
+}
+
+variable "bigquery_silver_dataset_id" {
+  description = "ID of the BigQuery Silver dataset."
+  type        = string
+}
+
+
+variable "bigquery_gold_dataset_id" {
+  description = "ID of the BigQuery Gold dataset."
   type        = string
 }
