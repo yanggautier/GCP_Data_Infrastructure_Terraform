@@ -40,13 +40,17 @@ with DAG(
         do_xcom_push=True
     )
 
+    # Retrieve the image name from XCom
+    # This ensures the image name is available before being used in subsequent tasks
+    dbt_image_name = determine_dbt_image_task.output
+
     # Task to compile DBT models
     compile_dbt_models = KubernetesPodOperator(
         task_id="compile_dbt_models",
         name="dbt-compile-pod",
         namespace="${dbt_namespace}",
         service_account_name="${dbt_k8s_sa_name}",
-        image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
+        image=dbt_image_name,
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
 
@@ -105,7 +109,7 @@ with DAG(
         name="dbt-run-pod",
         namespace="${dbt_namespace}",
         service_account_name="${dbt_k8s_sa_name}",
-        image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
+        image=dbt_image_name,
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
 
@@ -160,7 +164,7 @@ with DAG(
         name="dbt-test-pod",
         namespace="${dbt_namespace}",
         service_account_name="${dbt_k8s_sa_name}",
-        image=determine_dbt_image.xcom_pull(task_ids='determine_dbt_image_task'),
+        image=dbt_image_name,
         cmds=["dbt"],
         arguments=["run",  "--vars", "{'bronze_dataset': '${bronze_dataset}', 'silver_dataset': '${silver_dataset}', 'gold_dataset': '${gold_dataset}'}", "--profiles-dir", "/app/profiles"],
 
