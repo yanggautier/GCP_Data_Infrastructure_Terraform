@@ -187,7 +187,7 @@ resource "google_composer_environment" "dbt_orchestration" {
     software_config {
       image_version = var.cloud_composer_version
       pypi_packages = {
-        "apache-airflow-providers-cncf-kubernetes" = "latest" 
+        "apache-airflow-providers-cncf-kubernetes" = "10.8.0" 
       }
     }
 
