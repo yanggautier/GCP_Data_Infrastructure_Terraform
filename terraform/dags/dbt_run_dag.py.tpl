@@ -38,8 +38,6 @@ with DAG(
             fi
         """,
         do_xcom_push=True,
-        get_logs=True,
-        log_events_on_failure=True
     )
 
     # Task to compile DBT models
