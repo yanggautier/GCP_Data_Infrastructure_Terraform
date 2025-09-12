@@ -87,7 +87,7 @@ with DAG(
         
         # Resources configuration 
         resources={
-            "requests": {
+            "request": {
                 "memory": "512Mi",
                 "cpu": "250m"
             },
@@ -143,7 +143,7 @@ with DAG(
         },
         
         resources={
-            "requests": {
+            "request": {
                 "memory": "512Mi", 
                 "cpu": "250m"
             },
@@ -198,7 +198,7 @@ with DAG(
         },
         
         resources={
-            "requests": {
+            "request": {
                 "memory": "256Mi",
                 "cpu": "125m"
             },
