@@ -37,7 +37,7 @@ with DAG(
                 echo "${dbt_default_image}"
             fi
         """,
-        do_xcom_push=True,
+        do_xcom_push=True
     )
 
     # Task to compile DBT models
